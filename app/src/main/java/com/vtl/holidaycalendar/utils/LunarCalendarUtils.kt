@@ -29,12 +29,7 @@ object LunarCalendarUtils {
         "23/12" to "Tiễn Táo Quân về trời"
     )
 
-    private fun INT(d: Double): Int = floor(d).toInt()
-
-    private fun date2JuliusDay(dd: Int, mm: Int, yy: Int): Int {
-        var d = dd
-        var m = mm
-        var y = yy
+    private fun date2JuliusDay(d: Int, m: Int, y: Int): Int {
         val a = (14 - m) / 12
         val yf = y.toDouble() + 4800.0 - a.toDouble()
         val mf = m.toDouble() + 12.0 * a.toDouble() - 3.0
@@ -43,27 +38,6 @@ object LunarCalendarUtils {
             jd = d.toDouble() + floor((153.0 * mf + 2.0) / 5.0) + 365.0 * yf + floor(yf / 4.0) - 32083.0
         }
         return jd.toInt()
-    }
-
-    private fun juliusDay2Date(jd: Int): IntArray {
-        var a: Int
-        var b: Int
-        var c: Int
-        if (jd > 2299160) {
-            a = jd + 32044
-            b = (4 * a + 3) / 146097
-            c = a - (b * 146097) / 4
-        } else {
-            b = 0
-            c = jd + 32082
-        }
-        val d = (4 * c + 3) / 1461
-        val e = c - (1461 * d) / 4
-        val m = (5 * e + 2) / 153
-        val day = e - (153 * m + 2) / 5 + 1
-        val month = m + 3 - 12 * (m / 10)
-        val year = b * 100 + d - 4800 + (m / 10)
-        return intArrayOf(day, month, year)
     }
 
     private fun newMoon(k: Int): Double {

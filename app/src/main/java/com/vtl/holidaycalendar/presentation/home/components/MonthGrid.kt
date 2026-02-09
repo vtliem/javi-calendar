@@ -83,13 +83,13 @@ fun DayCell(
                 horizontalArrangement = Arrangement.spacedBy(6.dp, alignment = Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                dateInfo.lunarDate.day?.let {
-                    Text(
-                        text = it.value,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary,
-                    )
-                }
+                    dateInfo.lunarDate.day?.let {
+                        Text(
+                            text = it.value,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 Text(
                     text = dateInfo.day.value,
                     style = MaterialTheme.typography.bodyMedium,

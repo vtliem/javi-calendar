@@ -51,7 +51,7 @@ fun DayDetailsSection(
                         Text(
                             text = it.value,
                             style = MaterialTheme.typography.labelSmall,
-                            color = it.color
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -59,7 +59,7 @@ fun DayDetailsSection(
                     Text(
                         text = it.value,
                         style = MaterialTheme.typography.labelSmall,
-                        color = it.color
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -100,7 +100,7 @@ fun DayDetailsSection(
                     Text(
                         text = it.value,
                         style = MaterialTheme.typography.labelSmall,
-                        color = it.color
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -123,7 +123,7 @@ fun DayDetailsSection(
             Text(
                 text = it.value,
                 style = MaterialTheme.typography.bodyLarge,
-                color = it.color
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 

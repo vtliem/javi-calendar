@@ -1,6 +1,6 @@
 package com.vtl.holidaycalendar.domain.model
 
-class JapaneseHolidays(private val holidayMap: Map<String, String>) {
+data class JapaneseHolidays(private val holidayMap: Map<String, String>) {
     
     fun getHoliday(year: Int, month: Int, day: Int): String? {
         return holidayMap["$year/$month/$day"]

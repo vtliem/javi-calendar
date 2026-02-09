@@ -1,6 +1,7 @@
 package com.vtl.holidaycalendar.widgets.components
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceModifier
@@ -65,25 +66,25 @@ private fun RowScope.WidgetDayCell(dateInfo: DateInfo, option: Option) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalAlignment = Alignment.Top,
-        modifier = GlanceModifier.defaultWeight().padding(1.dp).height(32.dp)
+        modifier = GlanceModifier.defaultWeight().padding(1.dp)
     ) {
         // Line 1: Solar Day
         Row(
             modifier = GlanceModifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            dateInfo.lunarDate.day?.let {
-                Text(
-                    text = it.value,
-                    style = TextStyle(
-                        fontSize = 12.sp,
-                        color = GlanceTheme.colors.secondary,
-                        textAlign = TextAlign.End
-                    )
-                )
-            }
 
-            Spacer(modifier = GlanceModifier.width(8.dp))
+                dateInfo.lunarDate.day?.let {
+                    Text(
+                        text = it.value,
+                        style = TextStyle(
+                            fontSize = 11.sp,
+                            color = widgetColor(it.color,true),
+                            textAlign = TextAlign.End
+                        )
+                    )
+                }
+                Spacer(modifier = GlanceModifier.width(8.dp))
 
             Text(
                 text = dateInfo.day.value,
@@ -104,14 +105,16 @@ private fun RowScope.WidgetDayCell(dateInfo: DateInfo, option: Option) {
             )
         }
 
+        var noAdditionData = true
         // Line 2: Lunar Day Name (lucDieu)
         if (option.monthLucDieu) {
             dateInfo.lunarDate.lucDieu?.let {
+                noAdditionData = false
                 Text(
                     text = it.value,
                     style = TextStyle(
                         fontSize = 7.sp,
-                        color = widgetColor(it.color),
+                        color = widgetColor(it.color,true),
                         textAlign = TextAlign.End
                     )
                 )
@@ -120,6 +123,7 @@ private fun RowScope.WidgetDayCell(dateInfo: DateInfo, option: Option) {
         if (option.monthJapaneseHoliday && option.japaneseInfo) {
             // Line 3: Observance or Japanese Holiday
             dateInfo.japaneseDate.holiday?.let {
+                noAdditionData = false
                 Text(
                     text = it.value,
                     style = TextStyle(
@@ -133,6 +137,7 @@ private fun RowScope.WidgetDayCell(dateInfo: DateInfo, option: Option) {
         }
         if (option.monthObservance) {
             dateInfo.lunarDate.observance?.let {
+                noAdditionData = false
                 Text(
                     text = it.value,
                     style = TextStyle(
@@ -143,6 +148,9 @@ private fun RowScope.WidgetDayCell(dateInfo: DateInfo, option: Option) {
                     )
                 )
             }
+        }
+        if(noAdditionData){
+            Spacer(modifier = GlanceModifier.height(10.dp))
         }
     }
 }

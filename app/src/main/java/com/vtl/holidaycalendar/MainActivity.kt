@@ -35,14 +35,17 @@ import java.util.Locale
 import kotlin.math.abs
 
 class MainActivity : ComponentActivity() {
+    private var viewModel: CalendarViewModel? = null
+
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             HolidayCalendarTheme {
-                val viewModel: CalendarViewModel = viewModel(factory = CalendarViewModel.Factory)
-                val uiState by viewModel.uiState.collectAsState()
+                val vm: CalendarViewModel = viewModel(factory = CalendarViewModel.Factory)
+                viewModel = vm
+                val uiState by vm.uiState.collectAsState()
                 val isTodaySelected = remember(uiState.selectedDate) {
                     uiState.selectedDate == LocalDate.now()
                 }
@@ -53,7 +56,7 @@ class MainActivity : ComponentActivity() {
                         Column(horizontalAlignment = Alignment.End) {
                             if (uiState.viewMode == ViewMode.CALENDAR) {
                                 FloatingActionButton(
-                                    onClick = { viewModel.setViewMode(ViewMode.SETTINGS) },
+                                    onClick = { vm.setViewMode(ViewMode.SETTINGS) },
                                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
                                     modifier = Modifier.padding(bottom = 8.dp)
                                 ) {
@@ -63,7 +66,7 @@ class MainActivity : ComponentActivity() {
                             
                             if (uiState.viewMode == ViewMode.CALENDAR && !isTodaySelected) {
                                 FloatingActionButton(
-                                    onClick = { viewModel.goToToday() },
+                                    onClick = { vm.goToToday() },
                                     containerColor = MaterialTheme.colorScheme.primary,
                                     contentColor = MaterialTheme.colorScheme.onPrimary
                                 ) {
@@ -76,16 +79,16 @@ class MainActivity : ComponentActivity() {
                     Box(modifier = Modifier.padding(innerPadding)) {
                         CalendarView(
                             uiState = uiState,
-                            onDateSelected = { viewModel.selectDate(it) },
-                            onYearClick = { viewModel.setViewMode(ViewMode.YEAR_SELECT) },
-                            onMonthClick = { viewModel.setViewMode(ViewMode.MONTH_SELECT) },
-                            onDayClick = { viewModel.scrollToSelectedDate() },
-                            onScrollHandled = { viewModel.onScrollHandled() }
+                            onDateSelected = { vm.selectDate(it) },
+                            onYearClick = { vm.setViewMode(ViewMode.YEAR_SELECT) },
+                            onMonthClick = { vm.setViewMode(ViewMode.MONTH_SELECT) },
+                            onDayClick = { vm.scrollToSelectedDate() },
+                            onScrollHandled = { vm.onScrollHandled() }
                         )
 
                         if (uiState.viewMode != ViewMode.CALENDAR) {
                             ModalBottomSheet(
-                                onDismissRequest = { viewModel.setViewMode(ViewMode.CALENDAR) },
+                                onDismissRequest = { vm.setViewMode(ViewMode.CALENDAR) },
                                 sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
                             ) {
                                 Box(modifier = Modifier.fillMaxHeight(0.8f)) {
@@ -94,21 +97,21 @@ class MainActivity : ComponentActivity() {
                                             YearSelectionGrid(
                                                 selectedYear = uiState.selectedDate.year,
                                                 holidays = uiState.holidays,
-                                                onYearSelected = { viewModel.changeYear(it) },
-                                                onCurrentYearClick = { viewModel.goToToday() }
+                                                onYearSelected = { vm.changeYear(it) },
+                                                onCurrentYearClick = { vm.goToToday() }
                                             )
                                         }
                                         ViewMode.MONTH_SELECT -> {
                                             MonthSelectionGrid(
                                                 selectedMonth = uiState.selectedDate.monthValue,
-                                                onMonthSelected = { viewModel.changeMonth(it) },
-                                                onTodayClick = { viewModel.goToToday() }
+                                                onMonthSelected = { vm.changeMonth(it) },
+                                                onTodayClick = { vm.goToToday() }
                                             )
                                         }
                                         ViewMode.SETTINGS -> {
                                             SettingsSection(
                                                 option = uiState.option,
-                                                onOptionChanged = { viewModel.updateOption(it) }
+                                                onOptionChanged = { vm.updateOption(it) }
                                             )
                                         }
                                         else -> {}
@@ -121,6 +124,11 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel?.refreshWidget()
+    }
 }
 
 @Composable
@@ -132,37 +140,25 @@ fun CalendarView(
     onDayClick: () -> Unit,
     onScrollHandled: () -> Unit
 ) {
-    // Increase range to 2400 months (200 years)
     val totalItems = 2400
-    
-    // Reference month is 100 years ago from now
     val referenceMonth = remember { LocalDate.now().withDayOfMonth(1).minusYears(100) }
-    
-    // Initial scroll to "now"
-    val nowIndex = remember { 
+    val nowIndex = remember {
         ChronoUnit.MONTHS.between(referenceMonth, LocalDate.now().withDayOfMonth(1)).toInt()
     }
-    
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = nowIndex)
-    
     val snapLayoutInfoProvider = remember(listState) { SnapLayoutInfoProvider(listState) }
     val snapFlingBehavior = rememberSnapFlingBehavior(snapLayoutInfoProvider)
-    
     val locale = Locale.getDefault()
 
-    // Handle scroll requests (from Year/Month selection or Today button)
     LaunchedEffect(uiState.scrollToDate) {
         uiState.scrollToDate?.let { date ->
             val monthsDiff = ChronoUnit.MONTHS.between(
                 referenceMonth,
                 date.withDayOfMonth(1)
             ).toInt()
-            
             val targetIndex = monthsDiff.coerceIn(0, totalItems - 1)
-            
             if (listState.firstVisibleItemIndex != targetIndex || listState.firstVisibleItemScrollOffset != 0) {
                 val currentIdx = listState.firstVisibleItemIndex
-                // If jump is too far, jump closer first then animate for smoothness
                 if (abs(currentIdx - targetIndex) > 12) {
                     val intermediateIdx = if (targetIndex > currentIdx) targetIndex - 1 else targetIndex + 1
                     listState.scrollToItem(intermediateIdx)
@@ -200,8 +196,6 @@ fun CalendarView(
         ) {
             items(totalItems) { index ->
                 val monthDate = referenceMonth.plusMonths(index.toLong())
-                
-                // Optimized MonthInfo stable key
                 val monthInfo = remember(monthDate.year, monthDate.monthValue, uiState.holidays, 
                     uiState.selectedDate.let { if (it.year == monthDate.year && it.monthValue == monthDate.monthValue) it else null }) {
                     CalendarFactory.createMonthInfo(
@@ -222,7 +216,6 @@ fun CalendarView(
                             "$era $eraYear"
                         } catch (_: Exception) { "" }
                     } else ""
-                    
                     val lunarDate = LunarCalendarUtils.convertSolarToLunar(1, monthDate.monthValue, monthDate.year)
                     val hasHolidayData = uiState.holidays.hasData(monthDate.year)
                     Triple(jpYear, lunarDate.yearCanChi, hasHolidayData)
@@ -241,7 +234,6 @@ fun CalendarView(
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
-                        
                         Row(verticalAlignment = Alignment.Bottom) {
                             if (headerInfo.first.isNotEmpty()) {
                                 Text(
@@ -258,7 +250,6 @@ fun CalendarView(
                             )
                         }
                     }
-                    
                     MonthGridSection(
                         monthInfo = monthInfo,
                         option = uiState.option,

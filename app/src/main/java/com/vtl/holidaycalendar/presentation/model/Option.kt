@@ -2,7 +2,9 @@ package com.vtl.holidaycalendar.presentation.model
 
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class Option(
     val japaneseInfo: Boolean = true,
     val lucDieu: Boolean = true,
@@ -12,8 +14,8 @@ data class Option(
     val monthObservance: Boolean = true
 ){
     fun adjustBySize(widgetSize: DpSize) = copy(
-        monthLucDieu = monthLucDieu && widgetSize.width >= 280.dp,
-        monthJapaneseHoliday = monthJapaneseHoliday && widgetSize.width >= 300.dp && widgetSize.height >=300.dp,
-        monthObservance = monthObservance && widgetSize.width >= 300.dp && widgetSize.height >=300.dp,
+        monthLucDieu = monthLucDieu && widgetSize.width >= 200.dp,
+        monthJapaneseHoliday = monthJapaneseHoliday && widgetSize.width >= 250.dp && widgetSize.height >=200.dp,
+        monthObservance = monthObservance && widgetSize.width >= 250.dp && widgetSize.height >=200.dp,
     )
 }

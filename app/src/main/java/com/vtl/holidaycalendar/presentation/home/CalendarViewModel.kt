@@ -1,27 +1,26 @@
 package com.vtl.holidaycalendar.presentation.home
 
-import android.content.Context
-import android.util.Log
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import androidx.glance.appwidget.updateAll
 import com.vtl.holidaycalendar.HolidayCalendarApp
-import com.vtl.holidaycalendar.data.datasource.OptionDataSource
 import com.vtl.holidaycalendar.domain.CalendarFactory
+import com.vtl.holidaycalendar.domain.HolidayUseCase
+import com.vtl.holidaycalendar.domain.OptionUseCase
+import com.vtl.holidaycalendar.domain.model.JapaneseHolidays
 import com.vtl.holidaycalendar.presentation.model.DateInfo
 import com.vtl.holidaycalendar.presentation.model.MonthInfo
-import com.vtl.holidaycalendar.domain.model.JapaneseHolidays
-import com.vtl.holidaycalendar.domain.repository.HolidayRepository
 import com.vtl.holidaycalendar.presentation.model.Option
-import com.vtl.holidaycalendar.widgets.CombinedWidget
+import com.vtl.holidaycalendar.widgets.WidgetManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -38,39 +37,41 @@ data class HomeUiState(
     val selectedDateInfo: DateInfo? = null,
     val viewMode: ViewMode = ViewMode.CALENDAR,
     val scrollToDate: LocalDate? = null,
-    val option: Option = Option()
+    val option: Option = Option(),
+    val today: LocalDate = LocalDate.now()
 )
 
 class CalendarViewModel(
-    private val holidayRepository: HolidayRepository,
-    private val optionDataSource: OptionDataSource,
-    private val context: Context
-) : ViewModel() {
+    private val holidayUseCase: HolidayUseCase,
+    private val optionUseCase: OptionUseCase,
+    application: Application
+) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
-        loadHolidays()
-        loadOptions()
-    }
+        // Observe UseCase flows and update UI state
+        combine(
+            holidayUseCase.holidays,
+            optionUseCase.option
+        ) { holidays, option ->
+            _uiState.update { state ->
+                val newState = state.copy(holidays = holidays, option = option)
+                updateCalculatedData(newState)
+            }
+        }.launchIn(viewModelScope)
 
-    private fun loadHolidays() {
+        // Initial load
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
+            _uiState.update { it.copy(isLoading = true) }
             try {
-                holidayRepository.refreshHolidaysIfNeeded()
-                val holidays = holidayRepository.getHolidays()
-                val newState = _uiState.value.copy(holidays = holidays, isLoading = false, error = null)
-                _uiState.value = updateCalculatedData(newState)
+                holidayUseCase.refreshHolidays()
+                _uiState.update { it.copy(isLoading = false) }
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
+                _uiState.update { it.copy(isLoading = false, error = e.message) }
             }
         }
-    }
-
-    private fun loadOptions() {
-        _uiState.value = _uiState.value.copy(option = optionDataSource.loadOption())
     }
 
     private fun updateCalculatedData(state: HomeUiState): HomeUiState {
@@ -79,7 +80,8 @@ class CalendarViewModel(
             selected.year,
             selected.monthValue,
             state.holidays,
-            selectedDate = selected
+            selectedDate = selected,
+            today = state.today
         )
         val dateInfo = monthInfo.getDate(selected)
         return state.copy(
@@ -89,60 +91,57 @@ class CalendarViewModel(
     }
 
     fun selectDate(date: LocalDate) {
-        val newState = _uiState.value.copy(selectedDate = date, scrollToDate = null)
-        _uiState.value = updateCalculatedData(newState)
+        _uiState.update {
+            val newState = it.copy(selectedDate = date, scrollToDate = null)
+            updateCalculatedData(newState)
+        }
     }
 
     fun changeYear(year: Int) {
-        // We want to scroll to this year/month, but keep selectedDate as is
         val targetDate = _uiState.value.selectedDate.withYear(year)
-        _uiState.value = _uiState.value.copy(
-            viewMode = ViewMode.CALENDAR,
-            scrollToDate = targetDate
-        )
+        _uiState.update { it.copy(viewMode = ViewMode.CALENDAR, scrollToDate = targetDate) }
     }
 
     fun changeMonth(month: Int) {
-        // We want to scroll to this year/month, but keep selectedDate as is
         val targetDate = _uiState.value.selectedDate.withMonth(month)
-        _uiState.value = _uiState.value.copy(
-            viewMode = ViewMode.CALENDAR,
-            scrollToDate = targetDate
-        )
+        _uiState.update { it.copy(viewMode = ViewMode.CALENDAR, scrollToDate = targetDate) }
     }
 
     fun goToToday() {
         val today = LocalDate.now()
-        val newState = _uiState.value.copy(
-            selectedDate = today, 
-            scrollToDate = today,
-            viewMode = ViewMode.CALENDAR
-        )
-        _uiState.value = updateCalculatedData(newState)
+        _uiState.update {
+            val newState = it.copy(
+                today = today,
+                selectedDate = today,
+                scrollToDate = today,
+                viewMode = ViewMode.CALENDAR
+            )
+            updateCalculatedData(newState)
+        }
+        refreshWidget()
     }
     
     fun scrollToSelectedDate() {
-        _uiState.value = _uiState.value.copy(scrollToDate = _uiState.value.selectedDate)
+        _uiState.update { it.copy(scrollToDate = it.selectedDate) }
     }
 
     fun setViewMode(mode: ViewMode) {
-        _uiState.value = _uiState.value.copy(viewMode = mode)
+        _uiState.update { it.copy(viewMode = mode) }
     }
     
     fun onScrollHandled() {
-        _uiState.value = _uiState.value.copy(scrollToDate = null)
+        _uiState.update { it.copy(scrollToDate = null) }
     }
 
     fun updateOption(newOption: Option) {
-         _uiState.update {
-            if(it == newOption) it
-            else it.copy(option = newOption).also {
-                Log.v("CalendarViewModel", "updateOption: $newOption")
-                optionDataSource.saveOption(newOption)
-                viewModelScope.launch {
-                    CombinedWidget().updateAll(context)
-                }
-            }
+        viewModelScope.launch {
+            optionUseCase.updateOption(newOption)
+        }
+    }
+
+    fun refreshWidget() {
+        viewModelScope.launch {
+            WidgetManager.triggerUpdate(getApplication())
         }
     }
 
@@ -150,9 +149,11 @@ class CalendarViewModel(
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val application = (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as HolidayCalendarApp)
-                val holidayRepository = application.container.holidayRepository
-                val optionDataSource = application.container.optionDataSource
-                CalendarViewModel(holidayRepository, optionDataSource, application)
+                CalendarViewModel(
+                    application.container.holidayUseCase,
+                    application.container.optionUseCase,
+                    application
+                )
             }
         }
     }

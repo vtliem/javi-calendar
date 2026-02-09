@@ -235,7 +235,7 @@ object CalendarFactory {
                 ),
                 auspiciousHours = DisplayField(
                     value = lunarDate.auspiciousHours,
-                    color = Color.Unspecified
+                    color = HolidayOrange.copy(alpha = 0.8f)
                 )
             )
         )

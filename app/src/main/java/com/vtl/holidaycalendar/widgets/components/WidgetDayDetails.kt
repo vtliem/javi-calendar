@@ -17,7 +17,6 @@ import com.vtl.holidaycalendar.presentation.model.Option
 fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
     if (dateInfo == null) return
 
-    val textColor = widgetColor(Color.Unspecified)
 
     Column(
         modifier = GlanceModifier.fillMaxWidth(),
@@ -32,20 +31,20 @@ fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
             Column(modifier = GlanceModifier.defaultWeight()) {
                 Text(
                     text = dateInfo.year.value,
-                    style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold, color = textColor)
+                    style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold, color = widgetColor(dateInfo.year.color))
                 )
                 if(option.japaneseInfo) {
                     dateInfo.japaneseDate.year?.let {
                         Text(
                             text = it.value,
-                            style = TextStyle(fontSize = 11.sp, color = textColor)
+                            style = TextStyle(fontSize = 11.sp, color = widgetColor(it.color,true))
                         )
                     }
                 }
                 dateInfo.lunarDate.year?.let {
                     Text(
                         text = it.value,
-                        style = TextStyle(fontSize = 11.sp, color = textColor)
+                        style = TextStyle(fontSize = 11.sp, color = widgetColor(it.color,true))
                     )
                 }
             }
@@ -73,7 +72,7 @@ fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
                     style = TextStyle(
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = textColor,
+                        color = widgetColor(dateInfo.month.color),
                         textAlign = TextAlign.End
                     ),
                     modifier = GlanceModifier.defaultWeight()
@@ -81,7 +80,7 @@ fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
                 dateInfo.lunarDate.month?.let {
                     Text(
                         text = it.value,
-                        style = TextStyle(fontSize = 11.sp, color = textColor)
+                        style = TextStyle(fontSize = 11.sp, color = widgetColor(it.color,true))
                     )
                 }
             }
@@ -107,7 +106,7 @@ fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
             Spacer(modifier = GlanceModifier.height(2.dp))
             Text(
                 text = it.value,
-                style = TextStyle(fontSize = 11.sp, color = textColor)
+                style = TextStyle(fontSize = 11.sp, color = widgetColor(it.color,true))
             )
         }
         
@@ -140,8 +139,8 @@ fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
                 Spacer(modifier = GlanceModifier.height(2.dp))
                 Text(
                     text = it.value,
-                    style = TextStyle(fontSize = 9.sp, color = textColor, textAlign = TextAlign.Center),
-                    maxLines = 1
+                    style = TextStyle(fontSize = 10.sp, color = widgetColor(it.color), textAlign = TextAlign.Center),
+                    maxLines = 2
                 )
             }
         }
