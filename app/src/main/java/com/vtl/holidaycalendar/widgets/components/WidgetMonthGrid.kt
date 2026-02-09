@@ -1,6 +1,5 @@
 package com.vtl.holidaycalendar.widgets.components
 
-import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -50,7 +49,7 @@ fun WidgetMonthGrid(monthInfo: MonthInfo?, option: Option) {
             Row(modifier = GlanceModifier.fillMaxWidth()) {
                 week.forEach { dateInfo ->
                     if (dateInfo == null) {
-                        Box(modifier = GlanceModifier.defaultWeight().padding(1.dp)) {}
+                        Box(modifier = GlanceModifier.defaultWeight().padding(1.dp).height(32.dp)) {}
                     } else {
                         WidgetDayCell(dateInfo, option)
                     }
@@ -66,7 +65,7 @@ private fun RowScope.WidgetDayCell(dateInfo: DateInfo, option: Option) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalAlignment = Alignment.Top,
-        modifier = GlanceModifier.defaultWeight().padding(1.dp)
+        modifier = GlanceModifier.defaultWeight().padding(1.dp).height(32.dp)
     ) {
         // Line 1: Solar Day
         Row(
@@ -91,13 +90,7 @@ private fun RowScope.WidgetDayCell(dateInfo: DateInfo, option: Option) {
                 style = TextStyle(
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = widgetColor(
-                        if (dateInfo.day.backgroundColor == null) {
-                            dateInfo.day.color
-                        } else {
-                            contentColorFor(dateInfo.day.backgroundColor)
-                        }
-                    ),
+                    color = widgetColor(dateInfo.day.color),
                     textAlign = TextAlign.Center
                 ),
                 modifier = dateInfo.day.backgroundColor?.let {

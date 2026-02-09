@@ -18,6 +18,7 @@ import androidx.glance.background
 import androidx.glance.layout.*
 import com.vtl.holidaycalendar.MainActivity
 import com.vtl.holidaycalendar.data.datasource.HolidayDataSource
+import com.vtl.holidaycalendar.data.datasource.OptionDataSource
 import com.vtl.holidaycalendar.domain.CalendarFactory
 import com.vtl.holidaycalendar.domain.model.JapaneseHolidays
 import com.vtl.holidaycalendar.presentation.model.DateInfo
@@ -32,15 +33,17 @@ class CombinedWidget : GlanceAppWidget() {
     override val sizeMode = SizeMode.Exact
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val today = LocalDate.now()
-        val dataSource = HolidayDataSource(context)
-        val holidays = JapaneseHolidays.parseHolidays(dataSource.getFromCache() ?: "")
+        val holidayDataSource = HolidayDataSource(context)
+        val holidays = JapaneseHolidays.parseHolidays(holidayDataSource.getFromCache() ?: "")
         val monthInfo = CalendarFactory.createMonthInfo(today.year, today.monthValue, holidays, today)
         val dateInfo = monthInfo.getDate(today)
 
-        val option = Option()
+        val optionDataSource = OptionDataSource(context)
+        val option = optionDataSource.loadOption()
+        
         provideContent {
             Log.v("CombinedWidget","size: ${LocalSize.current}, ${context.resources.configuration.orientation}")
-            CombinedWidgetContent(monthInfo, dateInfo,option.adjustBySize(LocalSize.current) )
+            CombinedWidgetContent(monthInfo, dateInfo, option.adjustBySize(LocalSize.current) )
         }
     }
 
@@ -53,7 +56,7 @@ class CombinedWidget : GlanceAppWidget() {
                 .padding(8.dp)
                 .clickable(actionStartActivity<MainActivity>())
         ) {
-            WidgetDayDetails(dateInfo,option)
+            WidgetDayDetails(dateInfo, option)
             
             Spacer(modifier = GlanceModifier.height(8.dp))
             
@@ -62,7 +65,7 @@ class CombinedWidget : GlanceAppWidget() {
             
             Spacer(modifier = GlanceModifier.height(8.dp))
 
-            WidgetMonthGrid(monthInfo,option)
+            WidgetMonthGrid(monthInfo, option)
         }
     }
 }

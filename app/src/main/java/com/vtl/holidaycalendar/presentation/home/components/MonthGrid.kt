@@ -15,11 +15,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.vtl.holidaycalendar.presentation.model.DateInfo
 import com.vtl.holidaycalendar.presentation.model.MonthInfo
+import com.vtl.holidaycalendar.presentation.model.Option
 import java.time.LocalDate
 
 
 @Composable
-fun MonthGridSection(monthInfo: MonthInfo?, onDateSelected: (LocalDate) -> Unit) {
+fun MonthGridSection(
+    monthInfo: MonthInfo?, 
+    option: Option = Option(),
+    onDateSelected: (LocalDate) -> Unit
+) {
     if (monthInfo == null) return
 
     Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -52,6 +57,7 @@ fun MonthGridSection(monthInfo: MonthInfo?, onDateSelected: (LocalDate) -> Unit)
                     } else {
                         DayCell(
                             dateInfo = dateInfo,
+                            option = option,
                             modifier = Modifier
                                 .weight(1f)
                                 .clickable { onDateSelected(dateInfo.value) }
@@ -66,10 +72,11 @@ fun MonthGridSection(monthInfo: MonthInfo?, onDateSelected: (LocalDate) -> Unit)
 @Composable
 fun DayCell(
     dateInfo: DateInfo,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    option: Option = Option(),
 ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = modifier) {
+            modifier = modifier.defaultMinSize(minHeight = 32.dp)) {
             // Line 1: Solar Day + Lunar Day
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -86,7 +93,7 @@ fun DayCell(
                 Text(
                     text = dateInfo.day.value,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = if(dateInfo.day.backgroundColor == null) dateInfo.day.color else contentColorFor(dateInfo.day.backgroundColor),
+                    color = dateInfo.day.color,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
                     modifier = dateInfo.day.backgroundColor?.let {
@@ -101,37 +108,43 @@ fun DayCell(
             }
 
             // Line 2: Lunar Day Name (lucDieu)
-            dateInfo.lunarDate.lucDieu?.let {
-                Text(
-                    text = it.value,
-                    fontSize = 8.sp,
-                    color = it.color,
-                    maxLines = 1
-                )
+            if (option.monthLucDieu) {
+                dateInfo.lunarDate.lucDieu?.let {
+                    Text(
+                        text = it.value,
+                        fontSize = 8.sp,
+                        color = it.color,
+                        maxLines = 1
+                    )
+                }
             }
 
             // Line 3 & 4: Observances
-            dateInfo.japaneseDate.holiday?.let {
-                Text(
-                    text = it.value,
-                    fontSize = 7.sp,
-                    color = it.color,
-                    textAlign = TextAlign.Center,
-                    lineHeight = 8.sp,
-                    maxLines = 1,
-                    modifier = Modifier.fillMaxWidth()
-                )
+            if (option.monthJapaneseHoliday) {
+                dateInfo.japaneseDate.holiday?.let {
+                    Text(
+                        text = it.value,
+                        fontSize = 7.sp,
+                        color = it.color,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 8.sp,
+                        maxLines = 1,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
-            dateInfo.lunarDate.observance?.let {
-                Text(
-                    text = it.value,
-                    fontSize = 7.sp,
-                    color = it.color,
-                    textAlign = TextAlign.Center,
-                    lineHeight = 8.sp,
-                    maxLines = 1,
-                    modifier = Modifier.fillMaxWidth()
-                )
+            if (option.monthObservance) {
+                dateInfo.lunarDate.observance?.let {
+                    Text(
+                        text = it.value,
+                        fontSize = 7.sp,
+                        color = it.color,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 8.sp,
+                        maxLines = 1,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
         }
 }

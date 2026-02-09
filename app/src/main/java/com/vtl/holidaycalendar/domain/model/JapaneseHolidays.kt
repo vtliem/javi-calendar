@@ -3,11 +3,13 @@ package com.vtl.holidaycalendar.domain.model
 class JapaneseHolidays(private val holidayMap: Map<String, String>) {
     
     fun getHoliday(year: Int, month: Int, day: Int): String? {
-        val dateKey = String.format("%04d/%d/%d", year, month, day)
-        return holidayMap[dateKey] ?: holidayMap["$year/%02d/%02d".format(month, day)] ?: holidayMap["$year/$month/$day"]
+        return holidayMap["$year/$month/$day"]
     }
 
-    fun getAllHolidays(): Map<String, String> = holidayMap
+    fun hasData(year: Int): Boolean {
+        val prefix = "$year/"
+        return holidayMap.keys.any { it.startsWith(prefix) }
+    }
 
     companion object {
         fun parseHolidays(csv: String): JapaneseHolidays {
@@ -19,7 +21,19 @@ class JapaneseHolidays(private val holidayMap: Map<String, String>) {
                 if (line.isEmpty()) continue
                 val parts = line.split(",")
                 if (parts.size >= 2) {
-                    result[parts[0].trim()] = parts[1].trim()
+                    val rawDate = parts[0].trim()
+                    val normalizedKey = try {
+                        val dateParts = rawDate.split("/")
+                        if (dateParts.size == 3) {
+                            // Normalize to "yyyy/m/d" by parsing parts as integers
+                            "${dateParts[0].toInt()}/${dateParts[1].toInt()}/${dateParts[2].toInt()}"
+                        } else {
+                            rawDate
+                        }
+                    } catch (e: Exception) {
+                        rawDate
+                    }
+                    result[normalizedKey] = parts[1].trim()
                 }
             }
             return JapaneseHolidays(result)

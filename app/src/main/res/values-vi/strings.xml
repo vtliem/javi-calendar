@@ -10,4 +10,8 @@
     <string name="month_format">Tháng %1$d năm %2$d</string>
     <string name="today_format">%1$d/%2$d/%3$d</string>
     <string name="auspicious_hours">Giờ HĐ: %s</string>
+    <string name="current_year">Năm hiện tại</string>
+    <string name="today">Hôm nay</string>
+    <string name="lunar_month_prefix">Tháng</string>
+    <string name="lunar_day_prefix">Ngày</string>
 </resources>

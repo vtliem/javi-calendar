@@ -28,6 +28,7 @@ object CalendarFactory {
         year: Int,
         month: Int,
         holidays: JapaneseHolidays,
+        selectedDate: LocalDate? = null,
         today: LocalDate = LocalDate.now()
     ): MonthInfo {
         val locale = getLocale()
@@ -49,7 +50,7 @@ object CalendarFactory {
         // Fill dates
         for (day in 1..daysInMonth) {
             val date = LocalDate.of(year, month, day)
-            currentWeek.add(createDateInfo(date, holidays, today))
+            currentWeek.add(createDateInfo(date, holidays, selectedDate, today))
 
             if (currentWeek.size == 7) {
                 weeks.add(currentWeek)
@@ -89,6 +90,7 @@ object CalendarFactory {
     private fun createDateInfo(
         date: LocalDate,
         holidays: JapaneseHolidays,
+        selectedDate: LocalDate?,
         today: LocalDate
     ): DateInfo {
         val locale = getLocale()
@@ -105,6 +107,7 @@ object CalendarFactory {
         
         // Determine states
         val isToday = date == today
+        val isSelected = date == selectedDate
         val isSunday = date.dayOfWeek == DayOfWeek.SUNDAY
         val isSaturday = date.dayOfWeek == DayOfWeek.SATURDAY
         val hasHoliday = japaneseHoliday != null
@@ -122,13 +125,17 @@ object CalendarFactory {
             else -> Color.Unspecified
         }
         
-        val todayBackgroundColor = if (isToday) {
-            when {
-                isSunday || hasHoliday -> HolidayRed
-                isSaturday -> HolidayBlue
-                else -> Color.Unspecified
+        val backgroundColor = when {
+            isSelected -> Color.Gray.copy(alpha = 0.3f)
+            isToday -> {
+                when {
+                    isSunday || hasHoliday -> HolidayRed
+                    isSaturday -> HolidayBlue
+                    else -> Color.Gray // Or some default "today" indicator
+                }
             }
-        } else null
+            else -> null
+        }
         
         // Japanese Year
         val japaneseYear = try {
@@ -152,6 +159,8 @@ object CalendarFactory {
         val monthName = date.format(monthFormatter)
         val lunarMonthNameStr = "Tháng ${lunarMonthName(lunarDate.month)} - ${lunarDate.monthCanChi}"
         
+        val japaneseYearColor = if (!holidays.hasData(date.year)) HolidayOrange else Color.Unspecified
+
         return DateInfo(
             value = date,
             
@@ -167,7 +176,7 @@ object CalendarFactory {
             day = DisplayField(
                 value = date.dayOfMonth.toString(),
                 color = dateColor,
-                backgroundColor = todayBackgroundColor
+                backgroundColor = backgroundColor
             ),
             weekday = DisplayField(
                 value = date.dayOfWeek.getDisplayName(TextStyle.FULL, locale),
@@ -182,7 +191,7 @@ object CalendarFactory {
             japaneseDate = JapaneseDateDisplay(
                 year = DisplayField(
                     value = "($japaneseYear)",
-                    color = Color.Unspecified
+                    color = japaneseYearColor
                 ),
                 holiday = japaneseHoliday?.let {
                     DisplayField(

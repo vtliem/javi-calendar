@@ -10,4 +10,16 @@
     <string name="month_format">Month %1$d / %2$d</string>
     <string name="today_format">%1$d/%2$d/%3$d</string>
     <string name="auspicious_hours" translatable="false">Giờ hoàng đạo: %s</string>
+    <string name="current_year">Current Year</string>
+    <string name="today">Today</string>
+    <string name="lunar_month_prefix">Tháng</string>
+    <string name="lunar_day_prefix">Ngày</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_show_japanese_info_details">Show Japanese Info (Day Details)</string>
+    <string name="settings_show_luc_dieu_details">Show Luc Dieu (Day Details)</string>
+    <string name="settings_show_observances_details">Show Observances (Day Details)</string>
+    <string name="settings_show_luc_dieu_grid">Show Luc Dieu in Month Grid</string>
+    <string name="settings_show_japanese_holidays_grid">Show Japanese Holidays in Month Grid</string>
+    <string name="settings_show_observances_grid">Show Observances in Month Grid</string>
+    <string name="back_to_calendar">Back to Calendar</string>
 </resources>

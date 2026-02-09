@@ -11,12 +11,15 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.text.style.TextAlign
 import com.vtl.holidaycalendar.presentation.model.DateInfo
+import com.vtl.holidaycalendar.presentation.model.Option
 
 @Composable
 fun DayDetailsSection(
     dateInfo: DateInfo?,
+    option: Option = Option(),
     onYearClick: () -> Unit = {},
-    onMonthClick: () -> Unit = {}
+    onMonthClick: () -> Unit = {},
+    onDayClick: () -> Unit = {}
 ) {
     if (dateInfo == null) return
 
@@ -43,12 +46,14 @@ fun DayDetailsSection(
                     fontWeight = FontWeight.Bold,
                     color = dateInfo.year.color
                 )
-                dateInfo.japaneseDate.year?.let {
-                    Text(
-                        text = it.value,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = it.color
-                    )
+                if (option.japaneseInfo) {
+                    dateInfo.japaneseDate.year?.let {
+                        Text(
+                            text = it.value,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = it.color
+                        )
+                    }
                 }
                 dateInfo.lunarDate.year?.let {
                     Text(
@@ -61,7 +66,8 @@ fun DayDetailsSection(
 
             // Day number (Weekday)
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.clickable { onDayClick() }
             ) {
                 Text(
                     text = dateInfo.day.value,
@@ -122,36 +128,40 @@ fun DayDetailsSection(
         }
 
         // Line 4: observance if has
-        dateInfo.lunarDate.observance?.let {
-            Text(
-                text = it.value,
-                style = MaterialTheme.typography.bodyLarge,
-                color = it.color,
-                fontWeight = FontWeight.Bold
-            )
+        if (option.observance) {
+            dateInfo.lunarDate.observance?.let {
+                Text(
+                    text = it.value,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = it.color,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(4.dp))
 
         // Line 5: lucDieu full display
-        dateInfo.lunarDate.lucDieuFullDisplay?.let {
-            Text(
-                text = it.value,
-                style = MaterialTheme.typography.bodyMedium,
-                color = it.color
-            )
-        }
+        if (option.lucDieu) {
+            dateInfo.lunarDate.lucDieuFullDisplay?.let {
+                Text(
+                    text = it.value,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = it.color
+                )
+            }
 
-        // Line 6: auspiciousHours
-        dateInfo.lunarDate.auspiciousHours?.let {
-            Text(
-                text = it.value,
-                style = MaterialTheme.typography.bodySmall,
-                color = it.color,
-                textAlign = TextAlign.Center,
-                lineHeight = 16.sp,
-                modifier = Modifier.fillMaxWidth()
-            )
+            // Line 6: auspiciousHours
+            dateInfo.lunarDate.auspiciousHours?.let {
+                Text(
+                    text = it.value,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = it.color,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 16.sp,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
     }
 }
