@@ -15,12 +15,7 @@ import com.vtl.holidaycalendar.presentation.model.DateInfo
 import com.vtl.holidaycalendar.presentation.model.MonthInfo
 import com.vtl.holidaycalendar.presentation.model.Option
 import com.vtl.holidaycalendar.widgets.WidgetManager
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -41,35 +36,54 @@ data class HomeUiState(
     val today: LocalDate = LocalDate.now()
 )
 
+data class InternalUiState(
+    val selectedDate: LocalDate = LocalDate.now(),
+    val viewMode: ViewMode = ViewMode.CALENDAR,
+    val scrollToDate: LocalDate? = null,
+    val today: LocalDate = LocalDate.now(),
+    val isLoading: Boolean = false,
+    val error: String? = null
+)
+
 class CalendarViewModel(
     private val holidayUseCase: HolidayUseCase,
     private val optionUseCase: OptionUseCase,
     application: Application
 ) : AndroidViewModel(application) {
 
-    private val _uiState = MutableStateFlow(HomeUiState())
-    val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+    private val _internalState = MutableStateFlow(InternalUiState())
+
+    val uiState: StateFlow<HomeUiState> = combine(
+        holidayUseCase.holidays,
+        optionUseCase.option,
+        _internalState
+    ) { holidays, option, internal ->
+        val state = HomeUiState(
+            holidays = holidays,
+            option = option,
+            selectedDate = internal.selectedDate,
+            viewMode = internal.viewMode,
+            scrollToDate = internal.scrollToDate,
+            today = internal.today,
+            isLoading = internal.isLoading,
+            error = internal.error
+        )
+        updateCalculatedData(state)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = HomeUiState()
+    )
 
     init {
-        // Observe UseCase flows and update UI state
-        combine(
-            holidayUseCase.holidays,
-            optionUseCase.option
-        ) { holidays, option ->
-            _uiState.update { state ->
-                val newState = state.copy(holidays = holidays, option = option)
-                updateCalculatedData(newState)
-            }
-        }.launchIn(viewModelScope)
-
         // Initial load
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+            _internalState.update { it.copy(isLoading = true) }
             try {
                 holidayUseCase.refreshHolidays()
-                _uiState.update { it.copy(isLoading = false) }
+                _internalState.update { it.copy(isLoading = false) }
             } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false, error = e.message) }
+                _internalState.update { it.copy(isLoading = false, error = e.message) }
             }
         }
     }
@@ -90,47 +104,60 @@ class CalendarViewModel(
         )
     }
 
-    fun selectDate(date: LocalDate) {
-        _uiState.update {
-            val newState = it.copy(selectedDate = date, scrollToDate = null)
-            updateCalculatedData(newState)
+    fun onNewDay() {
+        viewModelScope.launch {
+            _internalState.update { it.copy(isLoading = true) }
+            holidayUseCase.refreshHolidays()
+            val today = LocalDate.now()
+            _internalState.update {
+                it.copy(
+                    today = today,
+                    selectedDate = today,
+                    scrollToDate = today,
+                    viewMode = ViewMode.CALENDAR,
+                    isLoading = false
+                )
+            }
         }
     }
 
+    fun selectDate(date: LocalDate) {
+        _internalState.update { it.copy(selectedDate = date, scrollToDate = null) }
+    }
+
     fun changeYear(year: Int) {
-        val targetDate = _uiState.value.selectedDate.withYear(year)
-        _uiState.update { it.copy(viewMode = ViewMode.CALENDAR, scrollToDate = targetDate) }
+        val targetDate = uiState.value.selectedDate.withYear(year)
+        _internalState.update { it.copy(viewMode = ViewMode.CALENDAR, scrollToDate = targetDate) }
     }
 
     fun changeMonth(month: Int) {
-        val targetDate = _uiState.value.selectedDate.withMonth(month)
-        _uiState.update { it.copy(viewMode = ViewMode.CALENDAR, scrollToDate = targetDate) }
+        val targetDate = uiState.value.selectedDate.withMonth(month)
+        _internalState.update { it.copy(viewMode = ViewMode.CALENDAR, scrollToDate = targetDate) }
     }
 
     fun goToToday() {
         val today = LocalDate.now()
-        _uiState.update {
-            val newState = it.copy(
+        _internalState.update {
+            it.copy(
                 today = today,
                 selectedDate = today,
                 scrollToDate = today,
                 viewMode = ViewMode.CALENDAR
             )
-            updateCalculatedData(newState)
         }
         refreshWidget()
     }
     
     fun scrollToSelectedDate() {
-        _uiState.update { it.copy(scrollToDate = it.selectedDate) }
+        _internalState.update { it.copy(scrollToDate = it.selectedDate) }
     }
 
     fun setViewMode(mode: ViewMode) {
-        _uiState.update { it.copy(viewMode = mode) }
+        _internalState.update { it.copy(viewMode = mode) }
     }
     
     fun onScrollHandled() {
-        _uiState.update { it.copy(scrollToDate = null) }
+        _internalState.update { it.copy(scrollToDate = null) }
     }
 
     fun updateOption(newOption: Option) {

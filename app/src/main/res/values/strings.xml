@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Holiday Calendar</string>
+    <string name="app_name">Ja-Vi Calendar</string>
     <string name="request_permission_text">Calendar access required to show events.</string>
     <string name="grant_permission_button">Grant Permission</string>
     <string name="no_events">No events.</string>
