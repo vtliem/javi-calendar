@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">休日カレンダー</string>
+    <string name="request_permission_text">イベントを表示するにはカレンダーへのアクセスが必要です。</string>
+    <string name="grant_permission_button">許可する</string>
+    <string name="no_events">イベントなし。</string>
+    <string name="lunar_label">旧暦:</string>
+    <string name="auspicious_day">★ 吉日</string>
+    <string name="todo_title">今日の予定</string>
+    <string name="month_format">%2$d年 %1$d月</string>
+    <string name="today_format">%3$d/%2$d/%1$d</string>
+</resources>

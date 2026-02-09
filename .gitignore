@@ -1,0 +1,7 @@
+build
+.idea
+.kotlin
+.vscode
+.gradle
+*.hprof
+local.properties
