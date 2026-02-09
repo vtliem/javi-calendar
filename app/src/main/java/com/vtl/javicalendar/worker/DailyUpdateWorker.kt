@@ -3,6 +3,7 @@ package com.vtl.javicalendar.worker
 import android.content.Context
 import androidx.work.*
 import com.vtl.javicalendar.HolidayCalendarApp
+import com.vtl.javicalendar.widgets.WidgetManager
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -19,7 +20,9 @@ class DailyUpdateWorker(
         
         // Refresh holidays from remote. 
         // HolidayUseCase handles state update and widget refresh.
-        holidayUseCase.refreshHolidays()
+        if(!holidayUseCase.refreshHolidays()){
+            WidgetManager.triggerUpdate(app)
+        }
         
         return Result.success()
     }

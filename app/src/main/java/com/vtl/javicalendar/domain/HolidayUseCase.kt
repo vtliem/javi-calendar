@@ -4,32 +4,35 @@ import android.content.Context
 import com.vtl.javicalendar.domain.model.JapaneseHolidays
 import com.vtl.javicalendar.domain.repository.HolidayRepository
 import com.vtl.javicalendar.widgets.WidgetManager
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.getAndUpdate
-import kotlinx.coroutines.launch
+import kotlin.concurrent.atomics.AtomicLong
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
 class HolidayUseCase(
     private val repository: HolidayRepository,
     private val context: Context
 ) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    
+    companion object{
+        private const val REFRESH_INTERVAL = 1000 * 60 * 60 * 24
+    }
     private val _holidays = MutableStateFlow(JapaneseHolidays(emptyMap()))
     val holidays: StateFlow<JapaneseHolidays> = _holidays.asStateFlow()
 
-    suspend fun refreshHolidays() {
-        val newData = repository.getHolidays()
-        val oldData = _holidays.getAndUpdate { newData }
-        
-        if (oldData != newData) {
-            scope.launch {
-                WidgetManager.triggerUpdate(context)
-            }
+    @OptIn(ExperimentalAtomicApi::class)
+    private val lastUpdated = AtomicLong(0L)
+
+    @OptIn(ExperimentalAtomicApi::class)
+    suspend fun refreshHolidays() = if (System.currentTimeMillis() - lastUpdated.load() < REFRESH_INTERVAL) {
+        false
+    } else repository.getHolidays().let { newData ->
+        _holidays.getAndUpdate { newData } != newData
+    }.also {
+        if (it) {
+            lastUpdated.store(System.currentTimeMillis())
+            WidgetManager.triggerUpdate(context)
         }
     }
 }

@@ -13,14 +13,14 @@ class AppContainer(private val context: Context) {
     private val holidayLocalDataSource by lazy { HolidayLocalDataSource(context) }
     private val holidayRemoteDataSource by lazy { HolidayRemoteDataSource() }
     
-    val holidayRepository: HolidayRepository by lazy { 
+    private val holidayRepository: HolidayRepository by lazy {
         HolidayRepositoryImpl(
             localDataSource = holidayLocalDataSource,
             remoteDataSource = holidayRemoteDataSource
         )
     }
 
-    val optionDataSource by lazy { OptionDataSource(context) }
+    private val optionDataSource by lazy { OptionDataSource(context) }
     
     val holidayUseCase by lazy { HolidayUseCase(holidayRepository, context) }
     val optionUseCase by lazy { OptionUseCase(optionDataSource, context) }

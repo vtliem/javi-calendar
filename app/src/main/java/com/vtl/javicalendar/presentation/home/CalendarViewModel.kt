@@ -128,7 +128,6 @@ class CalendarViewModel(
                 viewMode = ViewMode.CALENDAR
             )
         }
-        refreshWidget()
     }
     
     fun scrollToSelectedDate() {

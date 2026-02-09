@@ -1,5 +1,6 @@
 package com.vtl.javicalendar.utils
 
+import com.vtl.javicalendar.domain.model.LunarDate
 import kotlin.math.*
 
 /**
@@ -156,7 +157,7 @@ object LunarCalendarUtils {
         val monthCanChi = getCanChiMonth(lunarMonth, lunarYear)
         val yearCanChi = getCanChiYear(lunarYear)
 
-        return com.vtl.javicalendar.domain.model.LunarDate(
+        return LunarDate(
             day = lunarDay,
             month = lunarMonth,
             year = lunarYear,

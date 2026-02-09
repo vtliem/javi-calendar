@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.vtl.javicalendar.presentation.home.CalendarViewModel
 import com.vtl.javicalendar.presentation.home.ViewMode
@@ -26,6 +27,7 @@ import com.vtl.javicalendar.presentation.theme.HolidayCalendarTheme
 import com.vtl.javicalendar.domain.CalendarFactory
 import com.vtl.javicalendar.presentation.theme.HolidayOrange
 import com.vtl.javicalendar.utils.LunarCalendarUtils
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.chrono.JapaneseDate
 import java.time.format.TextStyle
@@ -34,7 +36,6 @@ import java.util.Locale
 import kotlin.math.abs
 
 class MainActivity : ComponentActivity() {
-    private var viewModel: CalendarViewModel? = null
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,7 +44,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             HolidayCalendarTheme {
                 val vm: CalendarViewModel = viewModel(factory = CalendarViewModel.Factory)
-                viewModel = vm
                 val uiState by vm.uiState.collectAsState()
                 val isTodaySelected = remember(uiState.selectedDate) {
                     uiState.selectedDate == LocalDate.now()
@@ -126,7 +126,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        viewModel?.refreshWidget()
+        lifecycleScope.launch {
+            (applicationContext as HolidayCalendarApp).container.holidayUseCase.refreshHolidays()
+        }
     }
 }
 
