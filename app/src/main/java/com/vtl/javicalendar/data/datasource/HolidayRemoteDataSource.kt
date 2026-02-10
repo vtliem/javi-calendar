@@ -10,56 +10,98 @@ import java.net.URL
 import java.nio.charset.Charset
 
 class HolidayRemoteDataSource {
-    companion object{
+    companion object {
         private const val CSV_URL = "https://www8.cao.go.jp/chosei/shukujitsu/syukujitsu.csv"
+        private const val TAG = "HolidayRemoteDataSource"
     }
 
-    suspend fun fetch(etag: String?): HolidayData? = withContext(Dispatchers.IO) {
-        val timeout = if (etag == null) 300_000 else 10_000 // 5 minutes for initial, 10 seconds for refresh
+    /**
+     * Fetches holiday data if it has changed since the last fetch.
+     * Returns null if data is up to date or if an error occurs.
+     */
+    suspend fun fetch(lastModified: Long): HolidayData? = withContext(Dispatchers.IO) {
         try {
+            if (detectChanges(lastModified)) {
+                fetchNewData(lastModified)
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to fetch data", e)
+            null
+        }
+    }
+
+    /**
+     * Checks if the remote data has changed using a HEAD request.
+     */
+    private fun detectChanges(lastModified: Long): Boolean {
+        if (lastModified == 0L) return true
+
+        val timeout = 10_000 // 10 seconds for refresh check
+        return try {
             val url = URL(CSV_URL)
-            
-            // First, check with a HEAD request
-            val headConnection = url.openConnection() as HttpURLConnection
-            headConnection.requestMethod = "HEAD"
-            headConnection.connectTimeout = timeout
-            headConnection.readTimeout = timeout
-            if (etag != null) {
-                headConnection.setRequestProperty("If-None-Match", etag)
-            }
-            headConnection.connect()
-
-            val responseCode = headConnection.responseCode
-            val newEtag = headConnection.getHeaderField("ETag")
-            
-            if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED || (etag != null && etag == newEtag)) {
-                Log.v("HolidayRemoteDataSource", "No update needed")
-                return@withContext null
-            }
-
-            // If changed or no etag, download content
             val connection = url.openConnection() as HttpURLConnection
-            connection.requestMethod = "GET"
-            connection.connectTimeout = timeout
-            connection.readTimeout = timeout
-            if (etag != null) {
-                connection.setRequestProperty("If-None-Match", etag)
+            connection.apply {
+                requestMethod = "HEAD"
+                connectTimeout = timeout
+                readTimeout = timeout
+                ifModifiedSince = lastModified
+                connect()
             }
-            connection.connect()
+
+            val responseCode = connection.responseCode
+            val serverLastModified = connection.lastModified
+
+            val noUpdate = responseCode == HttpURLConnection.HTTP_NOT_MODIFIED || 
+                          (serverLastModified in 1..lastModified)
+            
+            if (noUpdate) {
+                Log.v(TAG, "No update needed (Last-Modified: $lastModified)")
+                false
+            } else {
+                true
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to check Last-Modified, attempting full fetch: ${e.message}")
+            true // Fallback to fetching if check fails
+        }
+    }
+
+    /**
+     * Downloads the new CSV content.
+     */
+    private fun fetchNewData(lastModified: Long): HolidayData? {
+        val timeout = if (lastModified == 0L) 300_000 else 10_000 // 5 mins for initial, 10s for refresh
+        return try {
+            val url = URL(CSV_URL)
+            val connection = url.openConnection() as HttpURLConnection
+            connection.apply {
+                requestMethod = "GET"
+                connectTimeout = timeout
+                readTimeout = timeout
+                if (lastModified > 0) {
+                    ifModifiedSince = lastModified
+                }
+                connect()
+            }
 
             if (connection.responseCode == HttpURLConnection.HTTP_OK) {
-                val finalEtag = connection.getHeaderField("ETag") ?: newEtag
-                Log.v("HolidayRemoteDataSource", "Fetched data with etag: $finalEtag")
+                val newLastModified = connection.lastModified
+                Log.v(TAG, "Fetched new data. Last-Modified: $newLastModified")
+                
                 val inputStream = connection.inputStream
-                // The official CSV is Shift-JIS encoded
+                // The official Japanese government CSV is Shift-JIS encoded
                 val reader = BufferedReader(InputStreamReader(inputStream, Charset.forName("Shift-JIS")))
                 val content = reader.use { it.readText() }
-                return@withContext HolidayData(finalEtag, content)
+                
+                HolidayData(newLastModified, content)
+            } else {
+                Log.e(TAG, "Failed to fetch data: ${connection.responseCode} ${connection.responseMessage}")
+                null
             }
-            Log.e("HolidayRemoteDataSource", "Failed to fetch data: ${connection.responseMessage}")
-            null
         } catch (e: Exception) {
-            Log.e("HolidayRemoteDataSource", "Failed to fetch data", e)
+            Log.e(TAG, "Error during fetchNewData", e)
             null
         }
     }

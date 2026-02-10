@@ -16,8 +16,8 @@ class HolidayRepositoryImpl(
         // 1. Load data from local
         val localData = localDataSource.loadData()
         
-        // 2. Fetch from remote (checks ETag internally)
-        val newData = remoteDataSource.fetch(localData?.etag)
+        // 2. Fetch from remote
+        val newData = remoteDataSource.fetch(localData?.lastModified ?:0)
         
         val finalContent = if (newData != null) {
             // Data changed, save to local
