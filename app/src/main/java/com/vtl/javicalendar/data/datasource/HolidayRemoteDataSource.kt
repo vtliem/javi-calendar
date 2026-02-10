@@ -11,6 +11,7 @@ import java.nio.charset.Charset
 
 class HolidayRemoteDataSource {
     companion object {
+        // https://www8.cao.go.jp/chosei/shukujitsu/gaiyou.html
         private const val CSV_URL = "https://www8.cao.go.jp/chosei/shukujitsu/syukujitsu.csv"
         private const val TAG = "HolidayRemoteDataSource"
     }
