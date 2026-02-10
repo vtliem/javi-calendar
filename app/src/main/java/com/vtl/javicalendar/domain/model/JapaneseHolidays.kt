@@ -1,5 +1,8 @@
 package com.vtl.javicalendar.domain.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class JapaneseHolidays(private val holidayMap: Map<String, String>) {
     
     fun getHoliday(year: Int, month: Int, day: Int): String? {

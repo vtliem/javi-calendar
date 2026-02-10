@@ -3,6 +3,8 @@ package com.vtl.javicalendar.widgets
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -22,42 +24,62 @@ import androidx.glance.layout.*
 import androidx.glance.state.GlanceStateDefinition
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import com.vtl.javicalendar.MainActivity
+import com.vtl.javicalendar.domain.CalendarFactory
+import com.vtl.javicalendar.domain.CalendarSourcesUseCase
+import com.vtl.javicalendar.presentation.model.CalendarSources
 import com.vtl.javicalendar.presentation.model.DateInfo
 import com.vtl.javicalendar.presentation.model.MonthInfo
 import com.vtl.javicalendar.presentation.model.Option
 import com.vtl.javicalendar.presentation.theme.*
 import com.vtl.javicalendar.widgets.components.WidgetDayDetails
 import com.vtl.javicalendar.widgets.components.WidgetMonthGrid
+import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.Json
-import java.time.LocalDate
 
 class CombinedWidget : GlanceAppWidget() {
+    private data class WidgetData(
+        val monthInfo: MonthInfo,
+        val dateInfo: DateInfo?,
+        val option: Option
+    )
     override val sizeMode = SizeMode.Exact
 
     override val stateDefinition: GlanceStateDefinition<*> = PreferencesGlanceStateDefinition
 
     private val json = Json { ignoreUnknownKeys = true }
 
+    private suspend fun loadSources(context:Context, sourcesJson: String?): CalendarSources{
+        sourcesJson?.let {
+            runCatching { json.decodeFromString<CalendarSources>(it) }.getOrNull()
+        }?.let {
+            return it
+        }
+        return CalendarSourcesUseCase.create(context)().first()
+    }
+
+    private fun createData(sources: CalendarSources): WidgetData{
+        val today = sources.today
+        val monthInfo = CalendarFactory.createMonthInfo(today.year, today.monthValue,sources.holidays, today)
+
+        val dateInfo = monthInfo.getDate(today)
+        return WidgetData(monthInfo, dateInfo, sources.option)
+    }
+
+
+
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent {
             val prefs = currentState<Preferences>()
-            val monthJson = prefs[stringPreferencesKey("month_data")]
-            val optionJson = prefs[stringPreferencesKey("option_data")]
+            val widgetSize = LocalSize.current
 
-            val today = LocalDate.now()
-
-            // Fallback if data is missing from state
-            val monthInfo = monthJson?.let {
-                runCatching { json.decodeFromString<MonthInfo>(it) }.getOrNull()
+            val state by produceState<WidgetData?>(initialValue = null, prefs) {
+                val jsonString = prefs[stringPreferencesKey("sources")]
+                val sources = loadSources(context, jsonString)
+                value = createData(sources)
             }
-            val option = optionJson?.let {
-                runCatching { json.decodeFromString<Option>(it) }.getOrNull()
-            } ?: Option()
-
-            val dateInfo = monthInfo?.getDate(today)
-            val displayOption = option.adjustBySize(LocalSize.current)
-            Log.v("CombinedWidget", "${LocalSize.current} $displayOption")
-            CombinedWidgetContent(monthInfo, dateInfo, displayOption)
+            val displayOption = state?.option?.adjustBySize(widgetSize) ?: Option()
+            Log.v("CombinedWidget", "$widgetSize $displayOption")
+            CombinedWidgetContent(state?.monthInfo, state?.dateInfo, displayOption)
         }
     }
 

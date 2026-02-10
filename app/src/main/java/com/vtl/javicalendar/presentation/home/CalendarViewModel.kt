@@ -1,6 +1,7 @@
 package com.vtl.javicalendar.presentation.home
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -8,9 +9,9 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.vtl.javicalendar.HolidayCalendarApp
 import com.vtl.javicalendar.domain.CalendarFactory
-import com.vtl.javicalendar.domain.HolidayUseCase
-import com.vtl.javicalendar.domain.OptionUseCase
+import com.vtl.javicalendar.domain.CalendarSourcesUseCase
 import com.vtl.javicalendar.domain.model.JapaneseHolidays
+import com.vtl.javicalendar.presentation.model.CalendarSources
 import com.vtl.javicalendar.presentation.model.DateInfo
 import com.vtl.javicalendar.presentation.model.MonthInfo
 import com.vtl.javicalendar.presentation.model.Option
@@ -46,21 +47,19 @@ data class InternalUiState(
 )
 
 class CalendarViewModel(
-    private val holidayUseCase: HolidayUseCase,
-    private val optionUseCase: OptionUseCase,
+    private val calendarSourcesUseCase: CalendarSourcesUseCase,
     application: Application
 ) : AndroidViewModel(application) {
 
     private val _internalState = MutableStateFlow(InternalUiState())
 
     val uiState: StateFlow<HomeUiState> = combine(
-        holidayUseCase.holidays,
-        optionUseCase.option,
+        calendarSourcesUseCase(),
         _internalState
-    ) { holidays, option, internal ->
+    ) { sources, internal ->
         val state = HomeUiState(
-            holidays = holidays,
-            option = option,
+            holidays = sources.holidays,
+            option = sources.option,
             selectedDate = internal.selectedDate,
             viewMode = internal.viewMode,
             scrollToDate = internal.scrollToDate,
@@ -78,9 +77,12 @@ class CalendarViewModel(
     init {
         // Initial load
         viewModelScope.launch {
+            calendarSourcesUseCase().collectLatest { sources ->
+                refreshWidget(sources)
+            }
             _internalState.update { it.copy(isLoading = true) }
             try {
-                holidayUseCase.refreshHolidays()
+                calendarSourcesUseCase.refresh()
                 _internalState.update { it.copy(isLoading = false) }
             } catch (e: Exception) {
                 _internalState.update { it.copy(isLoading = false, error = e.message) }
@@ -143,15 +145,12 @@ class CalendarViewModel(
     }
 
     fun updateOption(newOption: Option) {
-        viewModelScope.launch {
-            optionUseCase.updateOption(newOption)
-        }
+        calendarSourcesUseCase.updateOption(newOption)
     }
 
-    fun refreshWidget() {
-        viewModelScope.launch {
-            WidgetManager.triggerUpdate(getApplication())
-        }
+    private suspend fun refreshWidget(sources: CalendarSources) {
+        Log.v("CalendarViewModel", "refreshWidget :${sources.today}")
+        WidgetManager.triggerUpdate(getApplication(), sources)
     }
 
     companion object {
@@ -159,8 +158,7 @@ class CalendarViewModel(
             initializer {
                 val application = (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as HolidayCalendarApp)
                 CalendarViewModel(
-                    application.container.holidayUseCase,
-                    application.container.optionUseCase,
+                    calendarSourcesUseCase = application.container.calendarSourcesUseCase,
                     application
                 )
             }

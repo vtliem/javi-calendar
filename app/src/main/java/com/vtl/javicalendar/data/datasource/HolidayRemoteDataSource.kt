@@ -13,6 +13,7 @@ class HolidayRemoteDataSource {
     companion object{
         private const val CSV_URL = "https://www8.cao.go.jp/chosei/shukujitsu/syukujitsu.csv"
     }
+
     suspend fun fetch(etag: String?): HolidayData? = withContext(Dispatchers.IO) {
         val timeout = if (etag == null) 300_000 else 10_000 // 5 minutes for initial, 10 seconds for refresh
         try {

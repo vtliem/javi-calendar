@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.work.*
 import com.vtl.javicalendar.HolidayCalendarApp
 import com.vtl.javicalendar.widgets.WidgetManager
+import kotlinx.coroutines.flow.first
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -16,14 +17,11 @@ class DailyUpdateWorker(
 
     override suspend fun doWork(): Result {
         val app = applicationContext as HolidayCalendarApp
-        val holidayUseCase = app.container.holidayUseCase
-        
-        // Refresh holidays from remote. 
-        // HolidayUseCase handles state update and widget refresh.
-        if(!holidayUseCase.refreshHolidays()){
-            WidgetManager.triggerUpdate(app)
+        val calendarSourcesUseCase = app.container.calendarSourcesUseCase
+        if(!calendarSourcesUseCase.refresh()){
+            val sources = calendarSourcesUseCase().first()
+            WidgetManager.triggerUpdate(app,sources)
         }
-        
         return Result.success()
     }
 

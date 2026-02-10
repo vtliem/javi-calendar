@@ -27,6 +27,8 @@ import com.vtl.javicalendar.presentation.theme.HolidayCalendarTheme
 import com.vtl.javicalendar.domain.CalendarFactory
 import com.vtl.javicalendar.presentation.theme.HolidayOrange
 import com.vtl.javicalendar.utils.LunarCalendarUtils
+import com.vtl.javicalendar.widgets.WidgetManager
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.chrono.JapaneseDate
@@ -127,7 +129,11 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         lifecycleScope.launch {
-            (applicationContext as HolidayCalendarApp).container.holidayUseCase.refreshHolidays()
+            val calendarSourcesUseCase = (applicationContext as HolidayCalendarApp).container.calendarSourcesUseCase
+            if(!calendarSourcesUseCase.refresh()){
+                val sources = calendarSourcesUseCase().first()
+                WidgetManager.triggerUpdate(applicationContext, sources)
+            }
         }
     }
 }
