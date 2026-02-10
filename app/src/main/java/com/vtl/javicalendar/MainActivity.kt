@@ -23,7 +23,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.vtl.javicalendar.presentation.home.CalendarViewModel
 import com.vtl.javicalendar.presentation.home.ViewMode
 import com.vtl.javicalendar.presentation.home.components.*
-import com.vtl.javicalendar.presentation.theme.HolidayCalendarTheme
+import com.vtl.javicalendar.presentation.theme.JaviCalendarTheme
 import com.vtl.javicalendar.domain.CalendarFactory
 import com.vtl.javicalendar.presentation.theme.HolidayOrange
 import com.vtl.javicalendar.utils.LunarCalendarUtils
@@ -43,7 +43,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            HolidayCalendarTheme {
+            JaviCalendarTheme {
                 val vm: CalendarViewModel = viewModel(factory = CalendarViewModel.Factory)
                 val uiState by vm.uiState.collectAsState()
                 val isTodaySelected = remember(uiState.selectedDate) {
@@ -128,7 +128,7 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         lifecycleScope.launch {
-            val calendarSourcesUseCase = (applicationContext as HolidayCalendarApp).container.calendarSourcesUseCase
+            val calendarSourcesUseCase = (applicationContext as JaviCalendarApp).container.calendarSourcesUseCase
             if(!calendarSourcesUseCase.refresh()){
                 val sources = calendarSourcesUseCase().first()
                 WidgetManager.triggerUpdate(applicationContext, sources)

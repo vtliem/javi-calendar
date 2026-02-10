@@ -2,7 +2,7 @@ package com.vtl.javicalendar.worker
 
 import android.content.Context
 import androidx.work.*
-import com.vtl.javicalendar.HolidayCalendarApp
+import com.vtl.javicalendar.JaviCalendarApp
 import com.vtl.javicalendar.widgets.WidgetManager
 import kotlinx.coroutines.flow.first
 import java.time.Duration
@@ -16,7 +16,7 @@ class DailyUpdateWorker(
 ) : CoroutineWorker(context, workerParams) {
 
     override suspend fun doWork(): Result {
-        val app = applicationContext as HolidayCalendarApp
+        val app = applicationContext as JaviCalendarApp
         val calendarSourcesUseCase = app.container.calendarSourcesUseCase
         if(!calendarSourcesUseCase.refresh()){
             val sources = calendarSourcesUseCase().first()

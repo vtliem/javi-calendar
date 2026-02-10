@@ -3,7 +3,7 @@ package com.vtl.javicalendar
 import android.app.Application
 import com.vtl.javicalendar.worker.DailyUpdateWorker
 
-class HolidayCalendarApp : Application() {
+class JaviCalendarApp : Application() {
 
     // Manual Dependency Injection Container
     lateinit var container: AppContainer

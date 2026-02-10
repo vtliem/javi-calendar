@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.vtl.javicalendar.HolidayCalendarApp
+import com.vtl.javicalendar.JaviCalendarApp
 import com.vtl.javicalendar.domain.CalendarFactory
 import com.vtl.javicalendar.domain.CalendarSourcesUseCase
 import com.vtl.javicalendar.domain.model.JapaneseHolidays
@@ -156,7 +156,7 @@ class CalendarViewModel(
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
-                val application = (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as HolidayCalendarApp)
+                val application = (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as JaviCalendarApp)
                 CalendarViewModel(
                     calendarSourcesUseCase = application.container.calendarSourcesUseCase,
                     application
