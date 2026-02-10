@@ -11,12 +11,15 @@ data class Option(
     val observance: Boolean = true,
     val monthLucDieu: Boolean = true,
     val monthJapaneseHoliday: Boolean = true,
-    val monthObservance: Boolean = true
-){
-    fun adjustBySize(widgetSize: DpSize) = copy(
-        lucDieu = lucDieu && widgetSize.width >= 250.dp && widgetSize.height >=400.dp,
-        monthLucDieu = monthLucDieu && widgetSize.width >= 250.dp && widgetSize.height >=400.dp,
-        monthJapaneseHoliday = monthJapaneseHoliday && widgetSize.width >= 250.dp && widgetSize.height >=300.dp,
-        monthObservance = monthObservance && widgetSize.width >= 250.dp && widgetSize.height >=400.dp,
-    )
+    val monthObservance: Boolean = true,
+) {
+  fun adjustBySize(widgetSize: DpSize) =
+      copy(
+          lucDieu = lucDieu && widgetSize.width >= 250.dp && widgetSize.height >= 400.dp,
+          monthLucDieu = monthLucDieu && widgetSize.width >= 250.dp && widgetSize.height >= 400.dp,
+          monthJapaneseHoliday =
+              monthJapaneseHoliday && widgetSize.width >= 250.dp && widgetSize.height >= 300.dp,
+          monthObservance =
+              monthObservance && widgetSize.width >= 250.dp && widgetSize.height >= 400.dp,
+      )
 }

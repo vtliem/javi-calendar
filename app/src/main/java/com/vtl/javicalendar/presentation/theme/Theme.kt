@@ -7,18 +7,11 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
-
 @Composable
-fun JaviCalendarTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit
-) {
-    val context = LocalContext.current
-    val colorScheme = if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+fun JaviCalendarTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
+  val context = LocalContext.current
+  val colorScheme =
+      if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+  MaterialTheme(colorScheme = colorScheme, typography = Typography, content = content)
 }

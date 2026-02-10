@@ -5,14 +5,14 @@ import com.vtl.javicalendar.worker.DailyUpdateWorker
 
 class JaviCalendarApp : Application() {
 
-    // Manual Dependency Injection Container
-    lateinit var container: AppContainer
+  // Manual Dependency Injection Container
+  lateinit var container: AppContainer
 
-    override fun onCreate() {
-        super.onCreate()
-        container = AppContainer(this)
-        
-        // Schedule daily update at 0:00 (Holidays + Widget)
-        DailyUpdateWorker.schedule(this)
-    }
+  override fun onCreate() {
+    super.onCreate()
+    container = AppContainer(this)
+
+    // Schedule daily update at 0:00 (Holidays + Widget)
+    DailyUpdateWorker.schedule(this)
+  }
 }

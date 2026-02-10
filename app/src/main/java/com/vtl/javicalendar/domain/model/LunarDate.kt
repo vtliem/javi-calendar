@@ -12,5 +12,5 @@ data class LunarDate(
     val isAuspicious: Boolean,
     val statusLabel: String, // e.g. "Thanh Long"
     val statusPrefix: String, // "Ngày hoàng đạo" or "Ngày hắc đạo"
-    val auspiciousHours: String
+    val auspiciousHours: String,
 )

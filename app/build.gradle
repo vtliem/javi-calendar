@@ -2,16 +2,17 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.spotless)
 }
 
 android {
     namespace 'com.vtl.javicalendar'
-    compileSdk 36
+    compileSdk libs.versions.compileSdk.get().toInteger()
 
     defaultConfig {
         applicationId "com.vtl.javicalendar"
-        minSdk 31
-        targetSdk 36
+        minSdk libs.versions.minSdk.get().toInteger()
+        targetSdk libs.versions.targetSdk.get().toInteger()
         versionCode 1
         versionName "1.0"
 
@@ -70,4 +71,16 @@ dependencies {
     androidTestImplementation platform(libs.androidx.compose.bom)
     androidTestImplementation libs.bundles.androidTest
     debugImplementation libs.bundles.debug
+}
+spotless {
+    kotlin {
+        target("src/**/*.kt")
+        ktfmt(libs.versions.ktfmt.get())
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+    kotlinGradle {
+        target('*.gradle.kts')
+        ktlint()
+    }
 }
