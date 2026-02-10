@@ -12,13 +12,13 @@ import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
 import androidx.glance.LocalSize
-import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
+import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.provideContent
-import androidx.glance.color.ColorProvider
 import androidx.glance.background
+import androidx.glance.color.ColorProvider
 import androidx.glance.currentState
 import androidx.glance.layout.*
 import androidx.glance.state.GlanceStateDefinition
@@ -37,72 +37,78 @@ import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.Json
 
 class CombinedWidget : GlanceAppWidget() {
-    private data class WidgetData(
-        val monthInfo: MonthInfo,
-        val dateInfo: DateInfo?,
-        val option: Option
-    )
-    override val sizeMode = SizeMode.Exact
+  private data class WidgetData(
+      val monthInfo: MonthInfo,
+      val dateInfo: DateInfo?,
+      val option: Option,
+  )
 
-    override val stateDefinition: GlanceStateDefinition<*> = PreferencesGlanceStateDefinition
+  override val sizeMode = SizeMode.Exact
 
-    private val json = Json { ignoreUnknownKeys = true }
+  override val stateDefinition: GlanceStateDefinition<*> = PreferencesGlanceStateDefinition
 
-    private suspend fun loadSources(context:Context, sourcesJson: String?): CalendarSources{
-        sourcesJson?.let {
-            runCatching { json.decodeFromString<CalendarSources>(it) }.getOrNull()
-        }?.let {
-            return it
+  private val json = Json { ignoreUnknownKeys = true }
+
+  private suspend fun loadSources(context: Context, sourcesJson: String?): CalendarSources {
+    sourcesJson
+        ?.let { runCatching { json.decodeFromString<CalendarSources>(it) }.getOrNull() }
+        ?.let {
+          return it
         }
-        return CalendarSourcesUseCase.create(context)().first()
+    return CalendarSourcesUseCase.create(context)().first()
+  }
+
+  private fun createData(sources: CalendarSources): WidgetData {
+    val today = sources.today
+    val monthInfo =
+        CalendarFactory.createMonthInfo(today.year, today.monthValue, sources.holidays, today)
+
+    val dateInfo = monthInfo.getDate(today)
+    return WidgetData(monthInfo, dateInfo, sources.option)
+  }
+
+  override suspend fun provideGlance(context: Context, id: GlanceId) {
+    provideContent {
+      val prefs = currentState<Preferences>()
+      val widgetSize = LocalSize.current
+
+      val state by
+          produceState<WidgetData?>(initialValue = null, prefs) {
+            val jsonString = prefs[stringPreferencesKey("sources")]
+            val sources = loadSources(context, jsonString)
+            value = createData(sources)
+          }
+      val displayOption = state?.option?.adjustBySize(widgetSize) ?: Option()
+      Log.v("CombinedWidget", "$widgetSize $displayOption")
+      CombinedWidgetContent(state?.monthInfo, state?.dateInfo, displayOption)
     }
+  }
 
-    private fun createData(sources: CalendarSources): WidgetData{
-        val today = sources.today
-        val monthInfo = CalendarFactory.createMonthInfo(today.year, today.monthValue,sources.holidays, today)
-
-        val dateInfo = monthInfo.getDate(today)
-        return WidgetData(monthInfo, dateInfo, sources.option)
-    }
-
-
-
-    override suspend fun provideGlance(context: Context, id: GlanceId) {
-        provideContent {
-            val prefs = currentState<Preferences>()
-            val widgetSize = LocalSize.current
-
-            val state by produceState<WidgetData?>(initialValue = null, prefs) {
-                val jsonString = prefs[stringPreferencesKey("sources")]
-                val sources = loadSources(context, jsonString)
-                value = createData(sources)
-            }
-            val displayOption = state?.option?.adjustBySize(widgetSize) ?: Option()
-            Log.v("CombinedWidget", "$widgetSize $displayOption")
-            CombinedWidgetContent(state?.monthInfo, state?.dateInfo, displayOption)
-        }
-    }
-
-    @Composable
-    private fun CombinedWidgetContent(monthInfo: MonthInfo?, dateInfo: DateInfo?, option: Option) {
-        Column(
-            modifier = GlanceModifier
-                .fillMaxWidth()
+  @Composable
+  private fun CombinedWidgetContent(monthInfo: MonthInfo?, dateInfo: DateInfo?, option: Option) {
+    Column(
+        modifier =
+            GlanceModifier.fillMaxWidth()
                 .wrapContentHeight()
-                .background(ColorProvider(day = WidgetBackgroundLight, night = WidgetBackgroundDark))
+                .background(
+                    ColorProvider(day = WidgetBackgroundLight, night = WidgetBackgroundDark)
+                )
                 .padding(8.dp)
                 .clickable(actionStartActivity<MainActivity>())
-        ) {
-            WidgetDayDetails(dateInfo, option)
+    ) {
+      WidgetDayDetails(dateInfo, option)
 
-            Spacer(modifier = GlanceModifier.height(8.dp))
+      Spacer(modifier = GlanceModifier.height(8.dp))
 
-            // Divider
-            Box(modifier = GlanceModifier.fillMaxWidth().height(1.dp).background( GlanceTheme.colors.outline)) {}
+      // Divider
+      Box(
+          modifier =
+              GlanceModifier.fillMaxWidth().height(1.dp).background(GlanceTheme.colors.outline)
+      ) {}
 
-            Spacer(modifier = GlanceModifier.height(8.dp))
+      Spacer(modifier = GlanceModifier.height(8.dp))
 
-            WidgetMonthGrid(monthInfo, option)
-        }
+      WidgetMonthGrid(monthInfo, option)
     }
+  }
 }

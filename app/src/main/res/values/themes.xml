@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.HolidayCalendar" parent="android:Theme.Material.Light.NoActionBar">
+    <style name="Theme.JaViCalendar" parent="android:Theme.Material.Light.NoActionBar">
         <!-- Using a more universal base theme to isolate the linking issue -->
     </style>
 </resources>

@@ -1,19 +1,18 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
-    id 'com.android.application'
-    id 'org.jetbrains.kotlin.plugin.compose' version '2.3.10'
-    id 'org.jetbrains.kotlin.plugin.serialization' version '2.3.10'
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.spotless)
 }
 
 android {
     namespace 'com.vtl.javicalendar'
-    compileSdk 36
+    compileSdk libs.versions.compileSdk.get().toInteger()
 
     defaultConfig {
         applicationId "com.vtl.javicalendar"
-        minSdk 26
-        targetSdk 35
+        minSdk libs.versions.minSdk.get().toInteger()
+        targetSdk libs.versions.targetSdk.get().toInteger()
         versionCode 1
         versionName "1.0"
 
@@ -45,44 +44,43 @@ android {
     }
 }
 
-
 kotlin {
     compilerOptions {
-        jvmTarget = JvmTarget.JVM_17
         freeCompilerArgs.add("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
     }
 }
 
 dependencies {
-    implementation 'androidx.core:core-ktx:1.17.0'
-    implementation "androidx.concurrent:concurrent-futures:1.3.0"
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.10.0'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0'
-    implementation 'androidx.activity:activity-compose:1.12.3'
-    implementation platform('androidx.compose:compose-bom:2026.01.01')
-    implementation 'androidx.compose.ui:ui'
-    implementation 'androidx.compose.ui:ui-graphics'
-    implementation 'androidx.compose.ui:ui-tooling-preview'
-    implementation 'androidx.compose.material3:material3'
-    implementation 'androidx.compose.material:material-icons-core'
-    implementation 'androidx.compose.material:material-icons-extended'
-    implementation 'com.google.android.material:material:1.13.0'
+    implementation libs.androidx.core.ktx
+    implementation libs.androidx.concurrent.futures
+    implementation libs.androidx.lifecycle.runtime.ktx
+    implementation platform(libs.androidx.compose.bom)
+    implementation libs.bundles.compose
+    implementation libs.material
     
     // Jetpack Glance for Widgets
-    implementation "androidx.glance:glance-appwidget:1.1.1"
-    implementation "androidx.glance:glance-material3:1.1.1"
+    implementation libs.bundles.glance
 
     // WorkManager
-    implementation "androidx.work:work-runtime-ktx:2.11.1"
+    implementation libs.androidx.work.runtime.ktx
 
     // Serialization
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0"
+    implementation libs.kotlinx.serialization.json
 
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.3.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
-    androidTestImplementation platform('androidx.compose:compose-bom:2026.01.01')
-    androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
-    debugImplementation 'androidx.compose.ui:ui-tooling'
-    debugImplementation 'androidx.compose.ui:ui-test-manifest'
+    testImplementation libs.bundles.test
+    androidTestImplementation platform(libs.androidx.compose.bom)
+    androidTestImplementation libs.bundles.androidTest
+    debugImplementation libs.bundles.debug
+}
+spotless {
+    kotlin {
+        target("src/**/*.kt")
+        ktfmt(libs.versions.ktfmt.get())
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+    kotlinGradle {
+        target('*.gradle.kts')
+        ktlint()
+    }
 }

@@ -4,17 +4,16 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:name=".HolidayCalendarApp"
-        android:allowBackup="true"
+        android:name=".JaviCalendarApp"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.HolidayCalendar">
+        android:theme="@style/Theme.JaViCalendar">
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.HolidayCalendar">
+            android:theme="@style/Theme.JaViCalendar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -32,5 +31,4 @@
                 android:resource="@xml/combined_widget_info" />
         </receiver>
     </application>
-
 </manifest>

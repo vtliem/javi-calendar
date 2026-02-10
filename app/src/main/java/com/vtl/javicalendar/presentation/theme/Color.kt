@@ -9,5 +9,3 @@ val HolidayOrange = Color(0xFFFF9800)
 // Widget Colors
 val WidgetBackgroundLight = Color(0x80FFFFFF)
 val WidgetBackgroundDark = Color(0x80000000)
-
-
