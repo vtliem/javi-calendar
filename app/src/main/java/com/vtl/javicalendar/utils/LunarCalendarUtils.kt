@@ -6,37 +6,6 @@ import kotlin.math.*
 /** Vietnamese Lunar Calendar implementation based on Ho Ngoc Duc's algorithm. */
 object LunarCalendarUtils {
 
-  private val CAN = listOf("Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý")
-  private val CHI =
-      listOf("Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi")
-  private val GIO_HD =
-      listOf(
-          "110100101100",
-          "001101001011",
-          "110011010010",
-          "101100110100",
-          "001011001101",
-          "010010110011",
-      )
-  private val LUC_DIEU =
-      listOf("Đại An", "Lưu Liên", "Tốc Hỷ", "Xích Khẩu", "Tiểu Cát", "Không Vong")
-  private val HOANG_DAO = listOf("Đại An", "Tốc Hỷ", "Tiểu Cát")
-
-  private val LUNAR_OBSERVANCES =
-      mapOf(
-          "1/1" to "Tết Nguyên Đán",
-          "2/1" to "Tết Nguyên Đán",
-          "3/1" to "Tết Nguyên Đán",
-          "15/1" to "Rằm tháng Giêng",
-          "3/3" to "Tết Hàn Thực",
-          "10/3" to "Giỗ tổ Hùng Vương",
-          "15/4" to "Lễ Phật Đản",
-          "5/5" to "Tết Đoan Ngọ",
-          "15/7" to "Rằm tháng Bảy",
-          "15/8" to "Tết Trung Thu",
-          "23/12" to "Tiễn Táo Quân về trời",
-      )
-
   private fun date2JuliusDay(d: Int, m: Int, y: Int): Int {
     val a = (14 - m) / 12
     val yf = y.toDouble() + 4800.0 - a.toDouble()
@@ -165,70 +134,11 @@ object LunarCalendarUtils {
     if (lunarMonth > 12) lunarMonth -= 12
     if (lunarMonth >= 11 && diff < 4) lunarYear -= 1
 
-    val dayName = LUC_DIEU[(dayNumber + lunarMonth - 1) % 6]
-    val isAuspicious = HOANG_DAO.contains(dayName)
-
-    val chiIndex = (dayNumber + 1) % 12
-    val auspiciousHours = calculateGioHoangDao(chiIndex)
-    val canChi = getCanChiDay(dayNumber)
-    val monthCanChi = getCanChiMonth(lunarMonth, lunarYear)
-    val yearCanChi = getCanChiYear(lunarYear)
-
     return LunarDate(
-        day = lunarDay,
-        month = lunarMonth,
-        year = lunarYear,
-        isLeap = lunarLeap == 1,
-        canChi = canChi,
-        monthCanChi = monthCanChi,
-        yearCanChi = yearCanChi,
-        observance = LUNAR_OBSERVANCES["$lunarDay/$lunarMonth"],
-        isAuspicious = isAuspicious,
-        statusLabel = dayName,
-        statusPrefix = if (isAuspicious) "Ngày hoàng đạo" else "Ngày hắc đạo",
-        auspiciousHours = auspiciousHours,
+        lunarYear,
+        lunarMonth,
+        lunarDay,
+        lunarLeap == 1,
     )
   }
-
-  private fun calculateGioHoangDao(chiOfDateIndex: Int): String {
-    val gioHD = GIO_HD[chiOfDateIndex % 6]
-    val sb = StringBuilder("Giờ Hoàng Đạo: ")
-    var count = 0
-    for (i in 0 until 12) {
-      if (gioHD[i] == '1') {
-        sb.append(CHI[i])
-        sb.append(" (${(i * 2 + 23) % 24}-${(i * 2 + 1) % 24})")
-        if (count++ < 5) sb.append(", ")
-      }
-    }
-    return sb.toString()
-  }
-
-  private fun getCanChiDay(jd: Int): String {
-    val can = CAN[(jd + 9) % 10]
-    val chi = CHI[(jd + 1) % 12]
-    return "$can $chi"
-  }
-
-  private fun getCanChiMonth(month: Int, year: Int): String {
-    val canYearIndex = (year + 6) % 10
-    val startCanM1 = (canYearIndex * 2 + 2) % 10
-    val canInx = (startCanM1 + (month - 1)) % 10
-    val chiInx = (month + 1) % 12
-    return "${CAN[canInx]} ${CHI[chiInx]}"
-  }
-
-  private fun getCanChiYear(year: Int): String {
-    val can = CAN[(year + 6) % 10]
-    val chi = CHI[(year + 8) % 12]
-    return "$can $chi"
-  }
-
-  fun lunarMonthName(lunarMonth: Int) =
-      when (lunarMonth) {
-        1 -> "Giêng"
-        11 -> "Một"
-        12 -> "Chạp"
-        else -> lunarMonth.toString()
-      }
 }

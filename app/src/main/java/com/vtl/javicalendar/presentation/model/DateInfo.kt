@@ -1,38 +1,101 @@
 package com.vtl.javicalendar.presentation.model
 
-import androidx.compose.ui.graphics.Color
+import com.vtl.javicalendar.domain.model.Zodiac
+import com.vtl.javicalendar.presentation.theme.Auspicious
+import com.vtl.javicalendar.presentation.theme.AuspiciousHours
+import com.vtl.javicalendar.presentation.theme.HolidayBlue
+import com.vtl.javicalendar.presentation.theme.HolidayRed
+import com.vtl.javicalendar.presentation.theme.NoDataJapaneseYear
+import com.vtl.javicalendar.presentation.theme.Observance
+import com.vtl.javicalendar.presentation.theme.SelectedBorder
+import com.vtl.javicalendar.presentation.theme.TodayBackground
+import com.vtl.javicalendar.utils.LunarCalendarUtils.convertSolarToLunar
+import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.chrono.JapaneseDate
+import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
+import java.util.Locale
 
 /** Presentation model for displaying a single date with all formatted strings and colors */
 data class DateInfo(
     // Original date value for handling clicks and logic
     val value: LocalDate,
+    val japaneseHoliday: String?,
+    val hasHolidayDataForOfYear: Boolean,
+    val isToday: Boolean,
+    val isSelected: Boolean,
+) {
+  companion object {
+    val DayOfWeek.color
+      get() =
+          when (this) {
+            DayOfWeek.SUNDAY -> HolidayRed
+            DayOfWeek.SATURDAY -> HolidayBlue
+            else -> null
+          }
 
-    // Gregorian date display
-    val year: DisplayField,
-    val month: DisplayField,
-    val day: DisplayField,
-    val weekday: DisplayField,
-    val fullDisplayDay: DisplayField?,
+    val DayOfWeek.displayName: String
+      get() = getDisplayName(TextStyle.FULL, Locale.getDefault())
 
-    // Japanese date
-    val japaneseDate: JapaneseDateDisplay,
+    val DayOfWeek.shortName: String
+      get() = getDisplayName(TextStyle.SHORT, Locale.getDefault())
 
-    // Lunar date
-    val lunarDate: LunarDateDisplay,
-)
+    fun colorOfJapaneseYear(hasHolidayDataForOfYear: Boolean) =
+        if (!hasHolidayDataForOfYear) NoDataJapaneseYear else null
 
-data class DisplayField(val value: String, val color: Color, val backgroundColor: Color? = null)
+    val Zodiac.color
+      get() = if (this.isAuspicious) Auspicious else null
 
-data class JapaneseDateDisplay(val year: DisplayField?, val holiday: DisplayField?)
+    private val MonthFormatter = DateTimeFormatter.ofPattern("MMMM")
+    val LocalDate.monthName: String
+      get() = MonthFormatter.format(this)
+  }
 
-data class LunarDateDisplay(
-    val year: DisplayField?,
-    val month: DisplayField?,
-    val day: DisplayField?,
-    val fullDisplayDay: DisplayField?,
-    val observance: DisplayField?,
-    val lucDieu: DisplayField?,
-    val lucDieuFullDisplay: DisplayField?,
-    val auspiciousHours: DisplayField?,
-)
+  val japaneseYear by lazy {
+    val jpDate = JapaneseDate.from(value)
+    val era = jpDate.era.getDisplayName(TextStyle.FULL, Locale.JAPAN)
+    val eraYear = jpDate.get(java.time.temporal.ChronoField.YEAR_OF_ERA)
+    "$era $eraYear"
+  }
+  val colorOfJapaneseYear
+    get() = colorOfJapaneseYear(hasHolidayDataForOfYear)
+
+  val lunarDate by lazy { convertSolarToLunar(value.dayOfMonth, value.monthValue, value.year) }
+  val lunarYear
+    get() =
+        if (lunarDate.year.value != value.year) lunarDate.year.displayName
+        else lunarDate.year.shortName
+
+  val lunarDayOfMonth
+    get() =
+        if (lunarDate.day.value == 1) "${lunarDate.day.value}/${lunarDate.month.value}"
+        else lunarDate.day.value.toString()
+
+  val colorOfDay
+    get() = if (japaneseHoliday != null) HolidayRed else value.dayOfWeek.color
+
+  val backgroundColorOfDay
+    get() = if (isToday) TodayBackground else null
+
+  val border
+    get() = if (isSelected) SelectedBorder else null
+
+  val colorOfAuspiciousHours
+    get() = AuspiciousHours
+
+  val colorOfObservance
+    get() = Observance
+
+  val colorOfJapaneseHoliday
+    get() = HolidayRed
+
+  fun colorOfLunarDay(display: ZodiacDisplay) =
+      if (lunarDate.zodiac.isAuspicious && display == ZodiacDisplay.Short) lunarDate.zodiac.color
+      else null
+
+  fun hasAdditionalData(option: OptionItem) =
+      option.zodiac == ZodiacDisplay.Full ||
+          (option.japaneseDate && japaneseHoliday != null) ||
+          (option.observance && lunarDate.observance != null)
+}

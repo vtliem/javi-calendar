@@ -4,22 +4,39 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import kotlinx.serialization.Serializable
 
+enum class ZodiacDisplay {
+  Full,
+  Short,
+  None,
+}
+
 @Serializable
-data class Option(
-    val japaneseInfo: Boolean = true,
-    val lucDieu: Boolean = true,
+data class OptionItem(
+    val japaneseDate: Boolean = true,
+    val lunarDate: Boolean = true,
+    val zodiac: ZodiacDisplay = ZodiacDisplay.Full,
     val observance: Boolean = true,
-    val monthLucDieu: Boolean = true,
-    val monthJapaneseHoliday: Boolean = true,
-    val monthObservance: Boolean = true,
 ) {
   fun adjustBySize(widgetSize: DpSize) =
       copy(
-          lucDieu = lucDieu && widgetSize.width >= 250.dp && widgetSize.height >= 400.dp,
-          monthLucDieu = monthLucDieu && widgetSize.width >= 250.dp && widgetSize.height >= 400.dp,
-          monthJapaneseHoliday =
-              monthJapaneseHoliday && widgetSize.width >= 250.dp && widgetSize.height >= 300.dp,
-          monthObservance =
-              monthObservance && widgetSize.width >= 250.dp && widgetSize.height >= 400.dp,
+          japaneseDate = japaneseDate && widgetSize.width >= 250.dp,
+          zodiac =
+              if (zodiac != ZodiacDisplay.Full) zodiac
+              else if (widgetSize.width >= 250.dp && widgetSize.height >= 400.dp) zodiac
+              else ZodiacDisplay.Short,
+          observance = observance && widgetSize.width >= 250.dp && widgetSize.height >= 400.dp,
+      )
+}
+
+@Serializable
+data class Option(
+    val dayDetail: OptionItem = OptionItem(),
+    val month: OptionItem = OptionItem(),
+    val sundayFirst: Boolean = true,
+) {
+  fun adjustBySize(widgetSize: DpSize) =
+      copy(
+          month = month.adjustBySize(widgetSize),
+          dayDetail = dayDetail.adjustBySize(widgetSize),
       )
 }

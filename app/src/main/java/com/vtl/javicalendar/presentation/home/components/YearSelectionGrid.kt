@@ -11,13 +11,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.vtl.javicalendar.R
 import com.vtl.javicalendar.domain.model.JapaneseHolidays
-import com.vtl.javicalendar.presentation.theme.HolidayOrange
+import com.vtl.javicalendar.presentation.theme.Auspicious
 import com.vtl.javicalendar.utils.LunarCalendarUtils
 import java.time.LocalDate
 import java.time.chrono.JapaneseDate
@@ -29,7 +27,6 @@ fun YearSelectionGrid(
     selectedYear: Int,
     holidays: JapaneseHolidays,
     onYearSelected: (Int) -> Unit,
-    onCurrentYearClick: () -> Unit,
 ) {
   // Range of 200 years to match the main calendar view: 100 years past and 100 years future
   val currentYear = LocalDate.now().year
@@ -45,17 +42,13 @@ fun YearSelectionGrid(
   }
 
   Column(modifier = Modifier.fillMaxSize()) {
-    Button(onClick = onCurrentYearClick, modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-      Text(stringResource(R.string.current_year))
-    }
-
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
         state = gridState,
         contentPadding = PaddingValues(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.weight(1f),
+        modifier = Modifier.fillMaxSize(),
     ) {
       items(years, key = { it }) { year ->
         YearItem(
@@ -108,7 +101,7 @@ private fun YearItem(year: Int, isSelected: Boolean, hasHolidayData: Boolean, on
             text = itemInfo.first,
             style = MaterialTheme.typography.labelSmall,
             textAlign = TextAlign.Center,
-            color = if (!hasHolidayData) HolidayOrange else Color.Unspecified,
+            color = if (!hasHolidayData) Auspicious else Color.Unspecified,
         )
       }
       Text(

@@ -24,7 +24,7 @@ import com.vtl.javicalendar.domain.CalendarFactory
 import com.vtl.javicalendar.presentation.home.CalendarViewModel
 import com.vtl.javicalendar.presentation.home.ViewMode
 import com.vtl.javicalendar.presentation.home.components.*
-import com.vtl.javicalendar.presentation.theme.HolidayOrange
+import com.vtl.javicalendar.presentation.theme.Auspicious
 import com.vtl.javicalendar.presentation.theme.JaviCalendarTheme
 import com.vtl.javicalendar.utils.LunarCalendarUtils
 import com.vtl.javicalendar.widgets.WidgetManager
@@ -97,14 +97,12 @@ class MainActivity : ComponentActivity() {
                           selectedYear = uiState.selectedDate.year,
                           holidays = uiState.holidays,
                           onYearSelected = { vm.changeYear(it) },
-                          onCurrentYearClick = { vm.goToToday() },
                       )
                     }
                     ViewMode.MONTH_SELECT -> {
                       MonthSelectionGrid(
                           selectedMonth = uiState.selectedDate.monthValue,
                           onMonthSelected = { vm.changeMonth(it) },
-                          onTodayClick = { vm.goToToday() },
                       )
                     }
                     ViewMode.SETTINGS -> {
@@ -184,12 +182,6 @@ fun CalendarView(
         onDayClick = onDayClick,
     )
 
-    HorizontalDivider(
-        modifier = Modifier.padding(vertical = 8.dp),
-        thickness = 1.dp,
-        color = MaterialTheme.colorScheme.outlineVariant,
-    )
-
     LazyColumn(
         state = listState,
         flingBehavior = snapFlingBehavior,
@@ -218,9 +210,9 @@ fun CalendarView(
             }
 
         val headerInfo =
-            remember(monthDate, uiState.holidays, uiState.option.japaneseInfo) {
+            remember(monthDate, uiState.holidays, uiState.option.month.japaneseDate) {
               val jpYear =
-                  if (uiState.option.japaneseInfo) {
+                  if (uiState.option.month.japaneseDate) {
                     try {
                       val jpDate = JapaneseDate.from(monthDate)
                       val era = jpDate.era.getDisplayName(TextStyle.FULL, Locale.JAPAN)
@@ -233,7 +225,7 @@ fun CalendarView(
               val lunarDate =
                   LunarCalendarUtils.convertSolarToLunar(1, monthDate.monthValue, monthDate.year)
               val hasHolidayData = uiState.holidays.hasData(monthDate.year)
-              Triple(jpYear, lunarDate.yearCanChi, hasHolidayData)
+              Triple(jpYear, lunarDate.year.shortName, hasHolidayData)
             }
 
         Column(modifier = Modifier.padding(bottom = 24.dp)) {
@@ -254,8 +246,7 @@ fun CalendarView(
                     text = "(${headerInfo.first})",
                     style = MaterialTheme.typography.labelMedium,
                     color =
-                        if (!headerInfo.third) HolidayOrange
-                        else MaterialTheme.colorScheme.secondary,
+                        if (!headerInfo.third) Auspicious else MaterialTheme.colorScheme.secondary,
                 )
                 Spacer(modifier = Modifier.width(4.dp))
               }
