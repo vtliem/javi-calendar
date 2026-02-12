@@ -1,6 +1,7 @@
 package com.vtl.javicalendar
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -129,6 +130,7 @@ class MainActivity : ComponentActivity() {
           (applicationContext as JaviCalendarApp).container.calendarSourcesUseCase
       if (!calendarSourcesUseCase.refresh()) {
         val sources = calendarSourcesUseCase().first()
+        Log.v("MainActivity", "triggerUpdate onResume")
         WidgetManager.triggerUpdate(applicationContext, sources)
       }
     }
