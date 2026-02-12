@@ -14,4 +14,15 @@
     <string name="today">Hôm nay</string>
     <string name="lunar_month_prefix">Tháng</string>
     <string name="lunar_day_prefix">Ngày</string>
+    <string name="settings_title">Cài đặt</string>
+    <string name="settings_section_day_detail">Chi tiết ngày</string>
+    <string name="settings_section_month">Lịch tháng</string>
+    <string name="settings_japanese_date">Lích Nhật</string>
+    <string name="settings_lunar_date">Âm lịch</string>
+    <string name="settings_observance">Ngày lễ</string>
+    <string name="settings_zodiac">Hiển thị Hoàng Đạo</string>
+    <string name="settings_sunday_first">Chủ nhật là ngày đầu tuần</string>
+    <string name="zodiac_display_full">Đầy đủ</string>
+    <string name="zodiac_display_short">Rút gọn</string>
+    <string name="zodiac_display_none">Không hiển thị</string>
 </resources>

@@ -13,4 +13,15 @@
     <string name="today">今日</string>
     <string name="lunar_month_prefix">Tháng</string>
     <string name="lunar_day_prefix">Ngày</string>
+    <string name="settings_title">設定</string>
+    <string name="settings_section_day_detail">一日の詳細</string>
+    <string name="settings_section_month">カレンダー</string>
+    <string name="settings_japanese_date">和暦</string>
+    <string name="settings_lunar_date">旧暦</string>
+    <string name="settings_observance">祝日・行事</string>
+    <string name="settings_zodiac">十二支の表示</string>
+    <string name="settings_sunday_first">日曜日を週の開始日にする</string>
+    <string name="zodiac_display_full">フル</string>
+    <string name="zodiac_display_short">ショート</string>
+    <string name="zodiac_display_none">非表示</string>
 </resources>

@@ -2,32 +2,27 @@ package com.vtl.javicalendar.data.datasource
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 import com.vtl.javicalendar.presentation.model.Option
+import kotlinx.serialization.json.Json
 
 class OptionDataSource(context: Context) {
   private val prefs: SharedPreferences =
       context.getSharedPreferences("calendar_options", Context.MODE_PRIVATE)
 
+  private val json = Json { ignoreUnknownKeys = true }
+
   fun saveOption(option: Option) {
-    prefs.edit().apply {
-      putBoolean("japaneseInfo", option.japaneseInfo)
-      putBoolean("lucDieu", option.lucDieu)
-      putBoolean("observance", option.observance)
-      putBoolean("monthLucDieu", option.monthLucDieu)
-      putBoolean("monthJapaneseHoliday", option.monthJapaneseHoliday)
-      putBoolean("monthObservance", option.monthObservance)
-      apply()
-    }
+    val jsonString = json.encodeToString(option)
+    prefs.edit { putString(KEY_OPTION, jsonString) }
   }
 
   fun loadOption(): Option {
-    return Option(
-        japaneseInfo = prefs.getBoolean("japaneseInfo", true),
-        lucDieu = prefs.getBoolean("lucDieu", true),
-        observance = prefs.getBoolean("observance", true),
-        monthLucDieu = prefs.getBoolean("monthLucDieu", true),
-        monthJapaneseHoliday = prefs.getBoolean("monthJapaneseHoliday", true),
-        monthObservance = prefs.getBoolean("monthObservance", true),
-    )
+    val jsonString = prefs.getString(KEY_OPTION, null) ?: return Option()
+    return runCatching { json.decodeFromString<Option>(jsonString) }.getOrDefault(Option())
+  }
+
+  companion object {
+    private const val KEY_OPTION = "option_json"
   }
 }

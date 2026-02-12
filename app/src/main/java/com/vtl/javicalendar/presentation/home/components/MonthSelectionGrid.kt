@@ -9,10 +9,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.vtl.javicalendar.R
 import java.time.Month
 import java.time.format.TextStyle
 import java.util.Locale
@@ -21,22 +19,17 @@ import java.util.Locale
 fun MonthSelectionGrid(
     selectedMonth: Int,
     onMonthSelected: (Int) -> Unit,
-    onTodayClick: () -> Unit,
 ) {
   val locale = Locale.getDefault()
   val months = Month.entries.toTypedArray()
 
   Column(modifier = Modifier.fillMaxSize()) {
-    Button(onClick = onTodayClick, modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-      Text(stringResource(R.string.today))
-    }
-
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
         contentPadding = PaddingValues(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.weight(1f),
+        modifier = Modifier.fillMaxSize(),
     ) {
       itemsIndexed(months) { index, month ->
         val monthValue = index + 1

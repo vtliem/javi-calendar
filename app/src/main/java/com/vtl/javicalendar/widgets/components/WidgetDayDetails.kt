@@ -10,7 +10,10 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import com.vtl.javicalendar.presentation.model.DateInfo
+import com.vtl.javicalendar.presentation.model.DateInfo.Companion.color
+import com.vtl.javicalendar.presentation.model.DateInfo.Companion.displayName
 import com.vtl.javicalendar.presentation.model.Option
+import com.vtl.javicalendar.presentation.model.ZodiacDisplay
 
 @Composable
 fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
@@ -21,30 +24,35 @@ fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
       horizontalAlignment = Alignment.CenterHorizontally,
   ) {
     // Line 1: Year (Era) [space] Day number (Weekday) [space] Month
-    Row(modifier = GlanceModifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        modifier = GlanceModifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Top,
+    ) {
       // Year
       Column(modifier = GlanceModifier.defaultWeight()) {
         Text(
-            text = dateInfo.year.value,
+            text = dateInfo.value.year.toString(),
             style =
                 TextStyle(
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = widgetColor(dateInfo.year.color),
+                    color = widgetColor(null),
                 ),
         )
-        if (option.japaneseInfo) {
-          dateInfo.japaneseDate.year?.let {
-            Text(
-                text = it.value,
-                style = TextStyle(fontSize = 11.sp, color = widgetColor(it.color, true)),
-            )
-          }
-        }
-        dateInfo.lunarDate.year?.let {
+        if (option.dayDetail.japaneseDate) {
           Text(
-              text = it.value,
-              style = TextStyle(fontSize = 11.sp, color = widgetColor(it.color, true)),
+              text = dateInfo.japaneseYear,
+              style =
+                  TextStyle(
+                      fontSize = 11.sp,
+                      color = widgetColor(dateInfo.colorOfJapaneseYear, true),
+                  ),
+          )
+        }
+        if (option.dayDetail.lunarDate) {
+          Text(
+              text = dateInfo.lunarYear,
+              style = TextStyle(fontSize = 11.sp, color = widgetColor(null, true)),
           )
         }
       }
@@ -52,103 +60,113 @@ fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
       // Day number (Weekday)
       Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            text = dateInfo.day.value,
+            text = dateInfo.value.dayOfMonth.toString(),
             style =
                 TextStyle(
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
-                    color = widgetColor(dateInfo.day.color),
+                    color = widgetColor(dateInfo.colorOfDay),
                 ),
         )
         Text(
-            text = dateInfo.weekday.value,
-            style = TextStyle(fontSize = 14.sp, color = widgetColor(dateInfo.weekday.color)),
+            text = dateInfo.value.dayOfWeek.displayName,
+            style =
+                TextStyle(fontSize = 14.sp, color = widgetColor(dateInfo.value.dayOfWeek.color)),
         )
       }
 
       // Month
-      Column(modifier = GlanceModifier.defaultWeight(), horizontalAlignment = Alignment.End) {
+      Column(
+          modifier = GlanceModifier.defaultWeight(),
+          horizontalAlignment = Alignment.End,
+      ) {
         Text(
-            text = dateInfo.month.value,
+            text = DateInfo.run { dateInfo.value.monthName },
             style =
                 TextStyle(
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = widgetColor(dateInfo.month.color),
                     textAlign = TextAlign.End,
+                    color = widgetColor(null),
                 ),
-            modifier = GlanceModifier.defaultWeight(),
         )
-        dateInfo.lunarDate.month?.let {
+        if (option.dayDetail.lunarDate) {
           Text(
-              text = it.value,
-              style = TextStyle(fontSize = 11.sp, color = widgetColor(it.color, true)),
+              text = dateInfo.lunarDate.month.displayName,
+              style = TextStyle(fontSize = 11.sp, color = widgetColor(null, true)),
           )
         }
       }
     }
 
     // Line 2: japanese holiday if has
-    if (option.japaneseInfo) {
-      dateInfo.japaneseDate.holiday?.let {
+    if (option.dayDetail.japaneseDate) {
+      dateInfo.japaneseHoliday?.let {
         Spacer(modifier = GlanceModifier.height(2.dp))
         Text(
-            text = it.value,
+            text = it,
             style =
                 TextStyle(
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    color = widgetColor(it.color),
+                    color = widgetColor(dateInfo.colorOfJapaneseHoliday),
                 ),
         )
       }
     }
 
-    // Line 3: lunar full date
-    dateInfo.lunarDate.fullDisplayDay?.let {
+    // Line 3: lunar day
+    if (option.dayDetail.lunarDate) {
       Spacer(modifier = GlanceModifier.height(2.dp))
       Text(
-          text = it.value,
-          style = TextStyle(fontSize = 11.sp, color = widgetColor(it.color, true)),
+          text = dateInfo.lunarDate.day.displayName,
+          style =
+              TextStyle(
+                  fontSize = 11.sp,
+                  color = widgetColor(dateInfo.colorOfLunarDay(option.dayDetail.zodiac), true),
+              ),
       )
     }
 
     // Line 4: observance if has
-    if (option.observance) {
+    if (option.dayDetail.observance) {
       dateInfo.lunarDate.observance?.let {
         Spacer(modifier = GlanceModifier.height(2.dp))
         Text(
-            text = it.value,
+            text = it,
             style =
                 TextStyle(
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    color = widgetColor(it.color),
+                    color = widgetColor(dateInfo.colorOfObservance),
                 ),
         )
       }
     }
 
-    // Line 5: lucDieu full display
-    if (option.lucDieu) {
-      dateInfo.lunarDate.lucDieuFullDisplay?.let {
-        Spacer(modifier = GlanceModifier.height(2.dp))
-        Text(text = it.value, style = TextStyle(fontSize = 11.sp, color = widgetColor(it.color)))
-      }
+    // Line 5: zodiac
+    if (option.dayDetail.zodiac == ZodiacDisplay.Full) {
+      Spacer(modifier = GlanceModifier.height(2.dp))
+      Text(
+          text = dateInfo.lunarDate.zodiac.toString(),
+          style = TextStyle(fontSize = 11.sp, color = widgetColor(dateInfo.lunarDate.zodiac.color)),
+          modifier = GlanceModifier.padding(start = 8.dp),
+      )
+      Text(
+          text = dateInfo.lunarDate.zodiac.detail,
+          style = TextStyle(fontSize = 10.sp, color = widgetColor(dateInfo.lunarDate.zodiac.color)),
+      )
       // Line 6: auspiciousHours
-      dateInfo.lunarDate.auspiciousHours?.let {
-        Spacer(modifier = GlanceModifier.height(2.dp))
-        Text(
-            text = it.value,
-            style =
-                TextStyle(
-                    fontSize = 10.sp,
-                    color = widgetColor(it.color),
-                    textAlign = TextAlign.Center,
-                ),
-            maxLines = 2,
-        )
-      }
+      Text(
+          text = dateInfo.lunarDate.auspiciousHours,
+          style =
+              TextStyle(
+                  fontSize = 10.sp,
+                  color = widgetColor(dateInfo.colorOfAuspiciousHours),
+                  textAlign = TextAlign.Center,
+              ),
+          maxLines = 2,
+      )
     }
   }
 }
