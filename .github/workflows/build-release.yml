@@ -36,6 +36,8 @@ jobs:
           START_DATE=1770957630
           VERSION_CODE=$(( ($NOW - $START_DATE) / 60 ))
           echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
+          BUILD_TIME=$(date +'%Y-%m-%d %H:%M:%S')
+          echo "BUILD_TIME=$BUILD_TIME" >> $GITHUB_ENV
 
       - name: Decode Keystore
         # Decodes your Base64 secret into the physical .jks file
@@ -88,7 +90,7 @@ jobs:
             ### 🚀 Build Information
             - **Application:** JaviCalendar
             - **Version:** ${{ github.ref_name }} (Build ${{ env.VERSION_CODE }})
-            - **Build Date:** $(date +'%Y-%m-%d %H:%M:%S')
+            - **Build Date:** ${{ env.BUILD_TIME }}
             
             ---
             ### 📲 Direct Download (Scan me!)
