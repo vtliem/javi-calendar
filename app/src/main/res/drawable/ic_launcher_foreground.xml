@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Large Background Moon -->
+    <path
+        android:fillColor="#FEF9E7"
+        android:pathData="M70,25 C55,25 42,37 42,52 C42,67 55,79 70,79 C65,79 60,75 57,70 C53,64 53,56 57,50 C60,45 65,41 70,41 C72,41 74,42 75,43 C72,32 82,25 70,25 Z"
+        android:fillAlpha="0.3"/>
+
+    <!-- Small decorative stars -->
+    <path android:fillColor="#FFFFFF" android:pathData="M35,45l1,1l1,-1l-1,-1z M85,35l1,1l1,-1l-1,-1z M25,65l1,1l1,-1l-1,-1z M90,75l1,1l1,-1l-1,-1z" />
+
+    <!-- Calendar Body -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M34,42h40c2,0 4,2 4,4v34c0,2 -2,4 -4,4h-40c-2,0 -4,-2 -4,-4v-34c0,-2 2,-4 4,-4z" />
+
+    <!-- Calendar Header (Teal) -->
+    <path
+        android:fillColor="#80CBC4"
+        android:pathData="M34,42h40c2,0 4,2 4,4v8h-48v-8c0,-2 2,-4 4,-4z" />
+
+    <!-- Header Clock Icon -->
+    <path
+        android:fillColor="#FFF59D"
+        android:pathData="M54,48m-3,0a3,3 0 1,1 6,0a3,3 0 1,1 -6,0" />
+    <path
+        android:strokeColor="#546E7A"
+        android:strokeWidth="0.5"
+        android:pathData="M54,48l0,-1.5 M54,48l1.5,0" />
+
+    <!-- Calendar Rings -->
+    <path
+        android:strokeColor="#455A64"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:pathData="M40,38v8 M68,38v8" />
+
+    <!-- Large 'J' -->
+    <path
+        android:strokeColor="#263238"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M56,58v12c0,3 -2,5 -5,5s-5,-2 -5,-5" />
+
+    <!-- Number '15' -->
+    <path
+        android:fillColor="#263238"
+        android:pathData="M64,58h1v12h-1z M68,58h5v1.5h-3.5v2.5c0.5,0 1,0.2 1.5,0.5s0.8,0.8 0.8,1.5s-0.3,1.2 -0.8,1.5s-1.2,0.5 -1.8,0.5c-0.6,0 -1.2,-0.2 -1.7,-0.5v-1.8h1.2c0.2,0.3 0.5,0.5 0.8,0.5s0.5,-0.2 0.5,-0.5s-0.2,-0.5 -0.5,-0.5h-1.5z" />
+
+    <!-- Pumpkin (representing Halloween/Vietnam context) -->
+    <path
+        android:fillColor="#FF9800"
+        android:pathData="M42,65c-3,0 -5,2 -5,5s2,5 5,5s5,-2 5,-5s-2,-5 -5,-5z" />
+    <path
+        android:strokeColor="#3E2723"
+        android:strokeWidth="0.5"
+        android:pathData="M42,64v2" />
+
+    <!-- Book/Notebook (Bottom Right) -->
+    <path
+        android:fillColor="#4DB6AC"
+        android:pathData="M68,75l10,4v8l-10,-4z" />
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="0.3"
+        android:pathData="M70,78l6,2.5 M70,80l6,2.5" />
+
+    <!-- "Javi" text simplified -->
+    <path
+        android:fillColor="#263238"
+        android:pathData="M50,80c0,0 -1,1 -1,2s1,1 1,1s1,-1 1,-2s-1,-1 -1,-1z M53,82h2 M56,82l1,1 M59,82v1" />
+
+    <!-- Subtle Flag Colors (Vietnam Red/Yellow and Japan Red) -->
+    <!-- Japanese Sun -->
+    <path
+        android:fillColor="#D32F2F"
+        android:pathData="M38,48m-1.5,0a1.5,1.5 0 1,1 3,0a1.5,1.5 0 1,1 -3,0" />
+
+    <!-- Vietnamese Star (Subtle Yellow Dot in Header) -->
+    <path
+        android:fillColor="#FBC02D"
+        android:pathData="M70,48l0.5,1l1,0.2l-0.8,0.6l0.2,1l-0.9,-0.5l-0.9,0.5l0.2,-1l-0.8,-0.6l1,-0.2z" />
+
+</vector>
