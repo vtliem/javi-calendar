@@ -88,12 +88,14 @@ fun CalendarView(
                 monthDate.year,
                 monthDate.monthValue,
                 uiState.holidays,
+                uiState.option.sundayFirst,
                 uiState.selectedDate.let {
                   if (it.year == monthDate.year && it.monthValue == monthDate.monthValue) it
                   else null
                 },
             ) {
               CalendarFactory.createMonthInfo(
+                  uiState.option.sundayFirst,
                   monthDate.year,
                   monthDate.monthValue,
                   uiState.holidays,

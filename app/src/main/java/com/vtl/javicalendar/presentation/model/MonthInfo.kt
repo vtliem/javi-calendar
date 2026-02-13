@@ -5,6 +5,7 @@ import java.time.LocalDate
 
 /** Presentation model for displaying a month with all formatted strings and colors */
 data class MonthInfo(
+    val daysOfWeek: List<DayOfWeek>,
     // Grid of dates
     val weeks: List<List<DateInfo?>>,
 ) {
@@ -12,9 +13,4 @@ data class MonthInfo(
   fun getDate(localDate: LocalDate): DateInfo? {
     return weeks.flatten().find { it?.value == localDate }
   }
-
-  fun daysOfWeek(sundayFirst: Boolean) =
-      if (sundayFirst) {
-        listOf(DayOfWeek.SUNDAY) + DayOfWeek.entries.filterNot { it == DayOfWeek.SUNDAY }
-      } else DayOfWeek.entries
 }

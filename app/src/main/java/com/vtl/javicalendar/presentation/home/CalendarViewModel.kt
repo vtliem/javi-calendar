@@ -95,6 +95,7 @@ class CalendarViewModel(
     val selected = state.selectedDate
     val monthInfo =
         CalendarFactory.createMonthInfo(
+            state.option.sundayFirst,
             selected.year,
             selected.monthValue,
             state.holidays,
