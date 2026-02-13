@@ -128,24 +128,8 @@ fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
       )
     }
 
-    // Line 4: observance if has
-    if (option.dayDetail.observance) {
-      dateInfo.lunarDate.observance?.let {
-        Spacer(modifier = GlanceModifier.height(2.dp))
-        Text(
-            text = it,
-            style =
-                TextStyle(
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = widgetColor(dateInfo.colorOfObservance),
-                ),
-        )
-      }
-    }
-
-    // Line 5: zodiac
-    if (option.dayDetail.zodiac == ZodiacDisplay.Full) {
+    // zodiac
+    if (option.dayDetail.lunarDate && option.dayDetail.zodiac == ZodiacDisplay.Full) {
       Spacer(modifier = GlanceModifier.height(2.dp))
       Text(
           text = dateInfo.lunarDate.zodiac.toString(),
@@ -167,6 +151,22 @@ fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
               ),
           maxLines = 2,
       )
+    }
+
+    // observance if has
+    if (option.dayDetail.lunarDate && option.dayDetail.observance) {
+      dateInfo.lunarDate.observance?.let {
+        Spacer(modifier = GlanceModifier.height(2.dp))
+        Text(
+            text = it,
+            style =
+                TextStyle(
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = widgetColor(dateInfo.colorOfObservance),
+                ),
+        )
+      }
     }
   }
 }

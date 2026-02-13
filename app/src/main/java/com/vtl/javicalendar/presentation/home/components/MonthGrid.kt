@@ -39,11 +39,7 @@ fun MonthGridSection(
   val allLunarDates by
       produceState<Map<LocalDate, LunarDate>?>(initialValue = null, monthInfo, option.month) {
         value =
-            if (
-                option.month.lunarDate ||
-                    option.month.observance ||
-                    option.month.zodiac != ZodiacDisplay.None
-            ) {
+            if (option.month.lunarDate) {
               withContext(Dispatchers.Default) {
                 monthInfo.weeks.flatten().filterNotNull().associate { it.value to it.lunarDate }
               }
