@@ -36,9 +36,7 @@ fun YearSelectionGrid(
     if (index != -1) maxOf(0, index - 6) else 0
   }
 
-  val gridState = rememberLazyGridState(
-    initialFirstVisibleItemIndex = initialIndex
-  )
+  val gridState = rememberLazyGridState(initialFirstVisibleItemIndex = initialIndex)
 
   Column(modifier = Modifier.fillMaxSize()) {
     LazyVerticalGrid(
@@ -63,33 +61,46 @@ fun YearSelectionGrid(
 }
 
 @Composable
-private fun YearItem(option: Option, year: Int, isSelected: Boolean, hasHolidayData: Boolean, onClick: () -> Unit) {
+private fun YearItem(
+    option: Option,
+    year: Int,
+    isSelected: Boolean,
+    hasHolidayData: Boolean,
+    onClick: () -> Unit,
+) {
   // 1. Use produceState to move calculation to a background thread
   // This returns a State object that starts with a "Loading" or Empty value
-  val itemInfo by produceState<Pair<String, String>?>(initialValue = null, year) {
-    // This runs in a Dispatcher.Default (background) coroutine
-    val date = LocalDate.of(year, 6, 1)
-    value = Pair(
-      if(option.dayDetail.japaneseDate) date.japaneseYear else "",
-      if(option.dayDetail.lunarDate) date.lunarDate.year.shortName else ""
-    )
-  }
+  val itemInfo by
+      produceState<Pair<String, String>?>(initialValue = null, year) {
+        // This runs in a Dispatcher.Default (background) coroutine
+        val date = LocalDate.of(year, 6, 1)
+        value =
+            Pair(
+                if (option.dayDetail.japaneseDate) date.japaneseYear else "",
+                if (option.dayDetail.lunarDate) date.lunarDate.year.shortName else "",
+            )
+      }
 
   Card(
-    modifier = Modifier.fillMaxWidth().clickable { onClick() },
-    colors = CardDefaults.cardColors(
-      containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer
-      else MaterialTheme.colorScheme.surfaceVariant
-    ),
+      modifier = Modifier.fillMaxWidth().clickable { onClick() },
+      colors =
+          CardDefaults.cardColors(
+              containerColor =
+                  if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                  else MaterialTheme.colorScheme.surfaceVariant
+          ),
   ) {
     Column(
-      modifier = Modifier.fillMaxWidth().padding(8.dp).heightIn(min = 80.dp), // Fixed height prevents jumping
-      horizontalAlignment = Alignment.CenterHorizontally
+        modifier =
+            Modifier.fillMaxWidth()
+                .padding(8.dp)
+                .heightIn(min = 80.dp), // Fixed height prevents jumping
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
       Text(
-        text = year.toString(),
-        style = MaterialTheme.typography.titleLarge,
-        fontWeight = FontWeight.Bold,
+          text = year.toString(),
+          style = MaterialTheme.typography.titleLarge,
+          fontWeight = FontWeight.Bold,
       )
 
       // Only show if the background calculation is finished
@@ -97,16 +108,16 @@ private fun YearItem(option: Option, year: Int, isSelected: Boolean, hasHolidayD
         val (japaneseYear, lunarYear) = it
         if (japaneseYear.isNotEmpty()) {
           Text(
-            text = japaneseYear,
-            style = MaterialTheme.typography.labelSmall,
-            textAlign = TextAlign.Center,
-            color = if (!hasHolidayData) Auspicious else Color.Unspecified,
+              text = japaneseYear,
+              style = MaterialTheme.typography.labelSmall,
+              textAlign = TextAlign.Center,
+              color = if (!hasHolidayData) Auspicious else Color.Unspecified,
           )
         }
         Text(
-          text = lunarYear,
-          style = MaterialTheme.typography.labelSmall,
-          textAlign = TextAlign.Center,
+            text = lunarYear,
+            style = MaterialTheme.typography.labelSmall,
+            textAlign = TextAlign.Center,
         )
       }
     }

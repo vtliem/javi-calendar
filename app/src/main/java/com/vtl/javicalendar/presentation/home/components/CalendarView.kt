@@ -22,6 +22,8 @@ import java.time.format.TextStyle
 import java.time.temporal.ChronoUnit
 import java.util.Locale
 import kotlin.math.abs
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun CalendarView(
@@ -97,21 +99,24 @@ fun CalendarView(
               )
             }
 
-        val headerInfo =
-            remember(monthDate, uiState.holidays, uiState.option.month.japaneseDate) {
-              val jpYear =
-                  if (uiState.option.month.japaneseDate) {
-                    monthDate.japaneseYear
-                  } else ""
-              val lunarYear =
-                  if (uiState.option.month.lunarDate) {
-                    monthDate.lunarDate.let {
-                      if (it.year.value != monthDate.year) it.year.displayName
-                      else it.year.shortName
-                    }
-                  } else ""
-              val hasHolidayData = uiState.holidays.hasData(monthDate.year)
-              Triple(jpYear, lunarYear, hasHolidayData)
+        val headerInfo by
+            produceState(Triple("", "", false), monthDate, uiState.holidays, uiState.option.month) {
+              value =
+                  withContext(Dispatchers.Default) {
+                    val jpYear =
+                        if (uiState.option.month.japaneseDate) {
+                          monthDate.japaneseYear
+                        } else ""
+                    val lunarYear =
+                        if (uiState.option.month.lunarDate) {
+                          monthDate.lunarDate.let {
+                            if (it.year.value != monthDate.year) it.year.displayName
+                            else it.year.shortName
+                          }
+                        } else ""
+                    val hasHolidayData = uiState.holidays.hasData(monthDate.year)
+                    Triple(jpYear, lunarYear, hasHolidayData)
+                  }
             }
 
         Column(modifier = Modifier.padding(bottom = 24.dp)) {

@@ -8,6 +8,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
@@ -15,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.vtl.javicalendar.domain.model.LunarDate
 import com.vtl.javicalendar.presentation.model.DateInfo
 import com.vtl.javicalendar.presentation.model.DateInfo.Companion.color
 import com.vtl.javicalendar.presentation.model.DateInfo.Companion.shortName
@@ -22,6 +25,8 @@ import com.vtl.javicalendar.presentation.model.MonthInfo
 import com.vtl.javicalendar.presentation.model.Option
 import com.vtl.javicalendar.presentation.model.ZodiacDisplay
 import java.time.LocalDate
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun MonthGridSection(
@@ -75,6 +80,20 @@ fun DayCell(
     modifier: Modifier = Modifier,
     option: Option = Option(),
 ) {
+  val lunarDate by
+      produceState<LunarDate?>(initialValue = null, dateInfo.value, option.month) {
+        value =
+            if (
+                option.month.lunarDate ||
+                    option.month.zodiac != ZodiacDisplay.None ||
+                    option.month.observance
+            ) {
+              withContext(Dispatchers.Default) { dateInfo.lunarDate }
+            } else {
+              null
+            }
+      }
+
   Column(
       horizontalAlignment = Alignment.CenterHorizontally,
       modifier =
@@ -89,9 +108,12 @@ fun DayCell(
             Arrangement.spacedBy(6.dp, alignment = Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-      if (option.month.lunarDate) {
+      lunarDate?.let {
+        val lunarDayText =
+            if (lunarDate!!.day.value == 1) "${it.day.value}/${it.month.value}"
+            else it.day.value.toString()
         Text(
-            text = dateInfo.lunarDayOfMonth,
+            text = lunarDayText,
             style = MaterialTheme.typography.labelSmall,
             color =
                 dateInfo.colorOfLunarDay(option.month.zodiac)
@@ -132,16 +154,18 @@ fun DayCell(
 
     // Line 3: Zodiac
     if (option.month.zodiac == ZodiacDisplay.Full) {
-      Text(
-          text = dateInfo.lunarDate.zodiac.godName,
-          fontSize = 8.sp,
-          color = dateInfo.lunarDate.zodiac.color ?: MaterialTheme.colorScheme.onSurface,
-          maxLines = 1,
-      )
+      lunarDate?.let {
+        Text(
+            text = it.zodiac.godName,
+            fontSize = 8.sp,
+            color = it.zodiac.color ?: MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+        )
+      }
     }
 
     if (option.month.observance) {
-      dateInfo.lunarDate.observance?.let {
+      lunarDate?.observance?.let {
         Text(
             text = it,
             fontSize = 7.sp,
