@@ -17,14 +17,14 @@ enum class Can(val displayName: String) {
   companion object {
     fun ofYear(lunarYear: Int) = entries[(lunarYear + 6) % 10]
 
-    fun ofMonth(lunarMonth: Int): Can {
-      val canYearIndex = (lunarMonth + 6) % 10
-      val startCanM1 = (canYearIndex * 2 + 2) % 10
-      val canInx = (startCanM1 + (lunarMonth - 1)) % 10
-      return entries[canInx]
+    fun ofMonth(lunarMonth: Int, lunarYear: Int): Can {
+      val yearCanIndex = (lunarYear + 6) % 10
+      // Công thức Ngũ hổ độn: Can tháng 1 = (Can năm * 2 + 1) % 10
+      val startCanOfMonth1 = (yearCanIndex * 2 + 2) % 10
+      return entries[(startCanOfMonth1 + (lunarMonth - 1)) % 10]
     }
 
-    fun ofDay(lunarDay: Int) = entries[(lunarDay + 9) % 10]
+    fun ofDay(julianDay: Int) = entries[(julianDay + 9) % 10]
   }
 }
 
@@ -49,7 +49,7 @@ enum class Chi(val displayName: String) {
 
     fun ofMonth(lunarMonth: Int) = entries[(lunarMonth + 1) % 12]
 
-    fun ofDay(lunarDay: Int) = entries[(lunarDay + 1) % 12]
+    fun ofDay(julianDay: Int) = entries[(julianDay + 1) % 12]
   }
 }
 
@@ -79,7 +79,7 @@ enum class Zodiac(
   companion object {
     fun of(
         lunarMonth: Int,
-        lunarDay: Int,
+        julianDay: Int,
     ): Zodiac {
       val startChiOfMonth =
           when (lunarMonth % 6) {
@@ -92,7 +92,7 @@ enum class Zodiac(
             else -> 0
           }
 
-      val godIndex = (Chi.ofDay(lunarDay).ordinal - startChiOfMonth + 12) % 12
+      val godIndex = (Chi.ofDay(julianDay).ordinal - startChiOfMonth + 12) % 12
       return entries[godIndex]
     }
   }
@@ -124,11 +124,11 @@ private val AuspiciousHoursList: List<List<Boolean>> =
         )
         .map { row -> row.map { it == '1' } }
 
-private fun calcAuspiciousHours(lunarDay: Int): List<String> =
-    AuspiciousHoursList[Chi.ofDay(lunarDay).ordinal % 6].withIndex()
+private fun calcAuspiciousHours(julianDay: Int): List<String> =
+    AuspiciousHoursList[Chi.ofDay(julianDay).ordinal % 6].withIndex()
         .filter { it.value }
-        .flatMap { (i, _) ->
-          listOf(Chi.entries[i].displayName, " (${(i * 2 + 23) % 24}-${(i * 2 + 1) % 24})")
+        .map { (i, _) ->
+          "${Chi.entries[i].displayName} (${(i * 2 + 23) % 24}-${(i * 2 + 1) % 24}h)"
         }
 
 sealed interface LunarDateField {
@@ -180,6 +180,7 @@ data class LunarDate(
     val lunarMonth: Int,
     val lunarDay: Int,
     val isLunarLeap: Boolean,
+    val julianDay: Int,
 ) {
   val year by lazy {
     LunarYear(lunarYear, Can.ofYear(lunarYear), Chi.ofYear(lunarYear), isLunarLeap)
@@ -187,11 +188,13 @@ data class LunarDate(
   val yearCanChi
     get() = "${year.can} ${year.chi}"
 
-  val month by lazy { LunarMonth(lunarMonth, Can.ofMonth(lunarMonth), Chi.ofMonth(lunarMonth)) }
-  val day by lazy { LunarDay(lunarDay, Can.ofDay(lunarDay), Chi.ofDay(lunarDay)) }
+  val month by lazy {
+    LunarMonth(lunarMonth, Can.ofMonth(lunarMonth, lunarYear), Chi.ofMonth(lunarMonth))
+  }
+  val day by lazy { LunarDay(lunarDay, Can.ofDay(julianDay), Chi.ofDay(julianDay)) }
   val observance by lazy { LunarObservances["$lunarDay/$lunarMonth"] }
-  val zodiac by lazy { Zodiac.of(lunarMonth, lunarDay) }
+  val zodiac by lazy { Zodiac.of(lunarMonth, julianDay) }
   val auspiciousHours by lazy {
-    "Giờ Hoàng Đạo: ${calcAuspiciousHours(lunarDay).joinToString(", ")}"
+    "Giờ Hoàng Đạo: ${calcAuspiciousHours(julianDay).joinToString(", ")}"
   }
 }

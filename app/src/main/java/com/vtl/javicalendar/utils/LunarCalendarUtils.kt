@@ -6,7 +6,7 @@ import kotlin.math.*
 /** Vietnamese Lunar Calendar implementation based on Ho Ngoc Duc's algorithm. */
 object LunarCalendarUtils {
 
-  private fun date2JuliusDay(d: Int, m: Int, y: Int): Int {
+  private fun date2julianDay(d: Int, m: Int, y: Int): Int {
     val a = (14 - m) / 12
     val yf = y.toDouble() + 4800.0 - a.toDouble()
     val mf = m.toDouble() + 12.0 * a.toDouble() - 3.0
@@ -71,7 +71,7 @@ object LunarCalendarUtils {
   }
 
   private fun getLunarMonth11(yy: Int, tz: Double): Int {
-    val off = date2JuliusDay(31, 12, yy) - 2415021
+    val off = date2julianDay(31, 12, yy) - 2415021
     val k = floor(off.toDouble() / 29.530588853).toInt()
     var nm = getNewMoonDay(k, tz)
     val sunLong = getSunLongitude(nm, tz)
@@ -101,7 +101,7 @@ object LunarCalendarUtils {
       yy: Int,
       timeZone: Double = 7.0,
   ): LunarDate {
-    val dayNumber = date2JuliusDay(dd, mm, yy)
+    val dayNumber = date2julianDay(dd, mm, yy)
     val k = floor((dayNumber.toDouble() - 2415021.076998695) / 29.530588853).toInt()
     var monthStart = getNewMoonDay(k + 1, timeZone)
     if (monthStart > dayNumber) {
@@ -139,6 +139,7 @@ object LunarCalendarUtils {
         lunarMonth,
         lunarDay,
         lunarLeap == 1,
+        dayNumber,
     )
   }
 }
