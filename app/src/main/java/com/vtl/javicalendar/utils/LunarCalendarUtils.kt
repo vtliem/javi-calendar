@@ -1,7 +1,7 @@
 package com.vtl.javicalendar.utils
 
-import com.vtl.javicalendar.domain.model.LunarDate
 import androidx.collection.LruCache
+import com.vtl.javicalendar.domain.model.LunarDate
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.*
 
@@ -73,15 +73,12 @@ object LunarCalendarUtils {
     return floor((sunLongitude(d.toDouble() - 0.5 - LUNAR_TIME_ZONE / 24.0) / PI) * 6.0).toInt()
   }
 
+  private val cachesLunarMonth11 by lazy { ConcurrentHashMap<Int, Int>() }
 
-  private val cachesLunarMonth11 by lazy{
-    ConcurrentHashMap<Int, Int>()
-  }
   private fun getLunarMonth11(yy: Int): Int {
-    return cachesLunarMonth11.getOrPut(yy) {
-      calculateLunarMonth11(yy)
-    }
+    return cachesLunarMonth11.getOrPut(yy) { calculateLunarMonth11(yy) }
   }
+
   private fun calculateLunarMonth11(yy: Int): Int {
     val off = date2julianDay(31, 12, yy) - 2415021
     val k = floor(off.toDouble() / 29.530588853).toInt()

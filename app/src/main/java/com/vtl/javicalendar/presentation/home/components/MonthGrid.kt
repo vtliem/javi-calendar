@@ -39,7 +39,11 @@ fun MonthGridSection(
   val allLunarDates by
       produceState<Map<LocalDate, LunarDate>?>(initialValue = null, monthInfo, option.month) {
         value =
-            if (option.month.lunarDate) {
+            if (
+                option.month.lunarDate ||
+                    option.month.observance ||
+                    option.month.zodiac != ZodiacDisplay.None
+            ) {
               withContext(Dispatchers.Default) {
                 monthInfo.weeks.flatten().filterNotNull().associate { it.value to it.lunarDate }
               }
@@ -153,7 +157,7 @@ fun DayCell(
     }
 
     // Line 3: Zodiac
-    if (option.month.lunarDate && option.month.zodiac == ZodiacDisplay.Full && lunarDate != null) {
+    if (option.month.zodiac == ZodiacDisplay.Full && lunarDate != null) {
       Text(
           text = lunarDate.zodiac.godName,
           fontSize = 8.sp,
@@ -162,7 +166,7 @@ fun DayCell(
       )
     }
 
-    if (option.month.lunarDate && option.month.observance && lunarDate != null) {
+    if (option.month.observance && lunarDate != null) {
       lunarDate.observance?.let {
         Text(
             text = it,
