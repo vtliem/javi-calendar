@@ -78,7 +78,7 @@ fun DayCell(
   Column(
       horizontalAlignment = Alignment.CenterHorizontally,
       modifier =
-          modifier.defaultMinSize(minHeight = 32.dp).let {
+          modifier.defaultMinSize(minHeight = 42.dp).let {
             dateInfo.border?.let { color -> it.border(1.dp, color, RoundedCornerShape(4.dp)) } ?: it
           },
   ) {

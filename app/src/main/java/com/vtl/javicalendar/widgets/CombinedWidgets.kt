@@ -9,7 +9,6 @@ import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.Preferences
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
-import androidx.glance.GlanceTheme
 import androidx.glance.LocalSize
 import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
@@ -84,12 +83,6 @@ class CombinedWidget : GlanceAppWidget() {
       WidgetDayDetails(dateInfo, option)
 
       Spacer(modifier = GlanceModifier.height(8.dp))
-
-      // Divider
-      Box(
-          modifier =
-              GlanceModifier.fillMaxWidth().height(1.dp).background(GlanceTheme.colors.outline)
-      ) {}
 
       Spacer(modifier = GlanceModifier.height(8.dp))
 
