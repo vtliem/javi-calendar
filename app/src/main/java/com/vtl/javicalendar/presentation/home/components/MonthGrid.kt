@@ -8,6 +8,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
@@ -15,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.vtl.javicalendar.domain.model.LunarDate
 import com.vtl.javicalendar.presentation.model.DateInfo
 import com.vtl.javicalendar.presentation.model.DateInfo.Companion.color
 import com.vtl.javicalendar.presentation.model.DateInfo.Companion.shortName
@@ -22,6 +25,8 @@ import com.vtl.javicalendar.presentation.model.MonthInfo
 import com.vtl.javicalendar.presentation.model.Option
 import com.vtl.javicalendar.presentation.model.ZodiacDisplay
 import java.time.LocalDate
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun MonthGridSection(
@@ -30,6 +35,22 @@ fun MonthGridSection(
     onDateSelected: (LocalDate) -> Unit,
 ) {
   if (monthInfo == null) return
+
+  val allLunarDates by
+      produceState<Map<LocalDate, LunarDate>?>(initialValue = null, monthInfo, option.month) {
+        value =
+            if (
+                option.month.lunarDate ||
+                    option.month.observance ||
+                    option.month.zodiac != ZodiacDisplay.None
+            ) {
+              withContext(Dispatchers.Default) {
+                monthInfo.weeks.flatten().filterNotNull().associate { it.value to it.lunarDate }
+              }
+            } else {
+              null
+            }
+      }
 
   Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
     // Weekday Headers
@@ -59,6 +80,7 @@ fun MonthGridSection(
           } else {
             DayCell(
                 dateInfo = dateInfo,
+                lunarDate = allLunarDates?.get(dateInfo.value),
                 option = option,
                 modifier = Modifier.weight(1f).clickable { onDateSelected(dateInfo.value) },
             )
@@ -72,6 +94,7 @@ fun MonthGridSection(
 @Composable
 fun DayCell(
     dateInfo: DateInfo,
+    lunarDate: LunarDate?,
     modifier: Modifier = Modifier,
     option: Option = Option(),
 ) {
@@ -89,9 +112,12 @@ fun DayCell(
             Arrangement.spacedBy(6.dp, alignment = Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-      if (option.month.lunarDate) {
+      if (option.month.lunarDate && lunarDate != null) {
+        val lunarDayText =
+            if (lunarDate.day.value == 1) "${lunarDate.day.value}/${lunarDate.month.value}"
+            else lunarDate.day.value.toString()
         Text(
-            text = dateInfo.lunarDayOfMonth,
+            text = lunarDayText,
             style = MaterialTheme.typography.labelSmall,
             color =
                 dateInfo.colorOfLunarDay(option.month.zodiac)
@@ -131,17 +157,17 @@ fun DayCell(
     }
 
     // Line 3: Zodiac
-    if (option.month.zodiac == ZodiacDisplay.Full) {
+    if (option.month.zodiac == ZodiacDisplay.Full && lunarDate != null) {
       Text(
-          text = dateInfo.lunarDate.zodiac.godName,
+          text = lunarDate.zodiac.godName,
           fontSize = 8.sp,
-          color = dateInfo.lunarDate.zodiac.color ?: MaterialTheme.colorScheme.onSurface,
+          color = lunarDate.zodiac.color ?: MaterialTheme.colorScheme.onSurface,
           maxLines = 1,
       )
     }
 
-    if (option.month.observance) {
-      dateInfo.lunarDate.observance?.let {
+    if (option.month.observance && lunarDate != null) {
+      lunarDate.observance?.let {
         Text(
             text = it,
             fontSize = 7.sp,

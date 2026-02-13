@@ -1,10 +1,13 @@
 package com.vtl.javicalendar.utils
 
+import androidx.collection.LruCache
 import com.vtl.javicalendar.domain.model.LunarDate
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.*
 
 /** Vietnamese Lunar Calendar implementation based on Ho Ngoc Duc's algorithm. */
 object LunarCalendarUtils {
+  private const val LUNAR_TIME_ZONE = 7.0
 
   private fun date2julianDay(d: Int, m: Int, y: Int): Int {
     val a = (14 - m) / 12
@@ -47,8 +50,8 @@ object LunarCalendarUtils {
     return jd1 + c1 - deltat
   }
 
-  private fun getNewMoonDay(k: Int, tz: Double): Int {
-    return floor(newMoon(k) + 0.5 + tz / 24.0).toInt()
+  private fun getNewMoonDay(k: Int): Int {
+    return floor(newMoon(k) + 0.5 + LUNAR_TIME_ZONE / 24.0).toInt()
   }
 
   private fun sunLongitude(jdn: Double): Double {
@@ -66,58 +69,71 @@ object LunarCalendarUtils {
     return l
   }
 
-  private fun getSunLongitude(d: Int, tz: Double): Int {
-    return floor((sunLongitude(d.toDouble() - 0.5 - tz / 24.0) / PI) * 6.0).toInt()
+  private fun getSunLongitude(d: Int): Int {
+    return floor((sunLongitude(d.toDouble() - 0.5 - LUNAR_TIME_ZONE / 24.0) / PI) * 6.0).toInt()
   }
 
-  private fun getLunarMonth11(yy: Int, tz: Double): Int {
+  private val cachesLunarMonth11 by lazy { ConcurrentHashMap<Int, Int>() }
+
+  private fun getLunarMonth11(yy: Int): Int {
+    return cachesLunarMonth11.getOrPut(yy) { calculateLunarMonth11(yy) }
+  }
+
+  private fun calculateLunarMonth11(yy: Int): Int {
     val off = date2julianDay(31, 12, yy) - 2415021
     val k = floor(off.toDouble() / 29.530588853).toInt()
-    var nm = getNewMoonDay(k, tz)
-    val sunLong = getSunLongitude(nm, tz)
+    var nm = getNewMoonDay(k)
+    val sunLong = getSunLongitude(nm)
     if (sunLong >= 9) {
-      nm = getNewMoonDay(k - 1, tz)
+      nm = getNewMoonDay(k - 1)
     }
     return nm
   }
 
-  private fun getLeapMonthOffset(a11: Double, tz: Double): Int {
+  private fun getLeapMonthOffset(a11: Double): Int {
     val k = floor((a11 - 2415021.076998695) / 29.530588853 + 0.5).toInt()
     var i = 1
-    var arc = getSunLongitude(getNewMoonDay(k + i, tz), tz)
+    var arc = getSunLongitude(getNewMoonDay(k + i))
     while (true) {
       val last = arc
       i++
-      val newmoon = getNewMoonDay(k + i, tz)
-      arc = getSunLongitude(newmoon, tz)
+      val newmoon = getNewMoonDay(k + i)
+      arc = getSunLongitude(newmoon)
       if (arc == last || i >= 14) break
     }
     return i - 1
   }
 
-  fun convertSolarToLunar(
-      dd: Int,
-      mm: Int,
-      yy: Int,
-      timeZone: Double = 7.0,
-  ): LunarDate {
+  private val caches by lazy { LruCache<Int, LunarDate>(1000) }
+
+  fun convertSolarToLunar(dd: Int, mm: Int, yy: Int): LunarDate {
+    val key = yy * 10000 + mm * 100 + dd
+    val cached = caches[key]
+    if (cached != null) {
+      return cached
+    }
+    val lunarDate = calculateLunarDateFromSolar(dd, mm, yy)
+    caches.put(key, lunarDate)
+    return lunarDate
+  }
+
+  private fun calculateLunarDateFromSolar(dd: Int, mm: Int, yy: Int): LunarDate {
     val julianDay = date2julianDay(dd, mm, yy)
     val k = floor((julianDay.toDouble() - 2415021.076998695) / 29.530588853).toInt()
-
-    var monthStart = getNewMoonDay(k + 1, timeZone)
+    var monthStart = getNewMoonDay(k + 1)
     if (monthStart > julianDay) {
-      monthStart = getNewMoonDay(k, timeZone)
+      monthStart = getNewMoonDay(k)
     }
 
-    var a11 = getLunarMonth11(yy, timeZone)
+    var a11 = getLunarMonth11(yy)
     var b11 = a11
     var lunarYear: Int
     if (a11 >= monthStart) {
       lunarYear = yy
-      a11 = getLunarMonth11(yy - 1, timeZone)
+      a11 = getLunarMonth11(yy - 1)
     } else {
       lunarYear = yy + 1
-      b11 = getLunarMonth11(yy + 1, timeZone)
+      b11 = getLunarMonth11(yy + 1)
     }
 
     val lunarDay = julianDay - monthStart + 1
@@ -127,7 +143,7 @@ object LunarCalendarUtils {
     var isCurrentMonthLeap = false
     var leapMonthInYear: Int? = null
     if (b11 - a11 > 365) {
-      val leapMonthOffset = getLeapMonthOffset(a11.toDouble(), timeZone)
+      val leapMonthOffset = getLeapMonthOffset(a11.toDouble())
       leapMonthInYear = (leapMonthOffset + 10).let { if (it > 12) it - 12 else it }
       if (diff >= leapMonthOffset) {
         lunarMonth = diff + 10
