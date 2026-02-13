@@ -19,16 +19,9 @@ jobs:
       with:
         java-version: '21'
         distribution: 'temurin'
-        cache: gradle
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v5
 
-    - name: Run Spotless Check
-      run: ./gradlew spotlessCheck
-
-    - name: Run Android Lint
-      run: ./gradlew lintDebug
-
-    - name: Build with Gradle
-      run: ./gradlew assembleDebug
+    - name: Run Static Analysis & Build
+      run: ./gradlew spotlessCheck lintDebug assembleDebug --parallel --no-daemon --stacktrace
