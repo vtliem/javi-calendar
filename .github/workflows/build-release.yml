@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for accurate changelog generation
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -26,47 +28,52 @@ jobs:
         run: chmod +x gradlew
 
       - name: Generate Version Code
+        # Calculates minutes elapsed since 2026-02-13 12:00:00 UTC
         run: |
           NOW=$(date +%s)
-          # 2026/02/13 11:17
-          START_DATE=1770944810
+          START_DATE=1770951167
           VERSION_CODE=$(( ($NOW - $START_DATE) / 60 ))
           echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
 
       - name: Decode Keystore
+        # Decodes the Base64 secret into a physical .jks file for the build process
         run: |
-          # decode secret Base64 to app/vtl-android-keystore.jks
           echo "${{ secrets.SIGNING_KEY_BASE64 }}" | base64 --decode > app/vtl-android-keystore.jks
 
       - name: Build Signed APK
+        # Injecting versioning and signing info via command line arguments
         run: |
           ./gradlew assembleRelease \
             -Pandroid.injected.versionCode=${{ env.VERSION_CODE }} \
-            -Pandroid.injected.versionName=${{ github.ref_name }}
+            -Pandroid.injected.versionName=${{ github.ref_name }} \
+            --no-daemon
         env:
           MYAPP_RELEASE_STORE_FILE: vtl-android-keystore.jks
           MYAPP_RELEASE_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           MYAPP_RELEASE_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           MYAPP_RELEASE_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
-      - name: Rename APK
+      - name: Prepare Artifact
         run: |
           mkdir -p release-artifacts
           cp app/build/outputs/apk/release/app-release.apk release-artifacts/JaviCalendar_${{ github.ref_name }}.apk
 
-      - name: Create Release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: release-artifacts/JaviCalendar_${{ github.ref_name }}.apk
           tag_name: ${{ github.ref }}
           name: Release ${{ github.ref_name }}
+          generate_release_notes: true # Automatically generates the changelog from commits
           draft: false
           prerelease: false
           body: |
-            ### 📦 Release Notes
-            - **App:** JaviCalendar
+            ### 🚀 Build Information
+            - **Application:** JaviCalendar
             - **Version Name:** ${{ github.ref_name }}
             - **Version Code:** ${{ env.VERSION_CODE }}
-            - **Build Time:** $(date +'%Y-%m-%d %H:%M:%S')
+            - **Build Date:** $(date +'%Y-%m-%d %H:%M:%S')
+            
+            *The automated changelog is generated below.*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
