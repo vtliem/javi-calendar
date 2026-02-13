@@ -11,7 +11,7 @@ Sẵn tiện để tránh việc lịch Nhật trông quá đơn điệu và qua
 
 ### ✨ Tính năng chính
 - 🔴 **Ngày lễ Nhật Bản - Đỏ là Nghỉ:** Hiển thị rực rỡ các ngày nghỉ lễ theo dữ liệu chuẩn xác từ [Trang web Nội các Nhật Bản](https://www8.cao.go.jp/chosei/shukujitsu/gaiyou.html).
-- 🧧 **Lịch Vạn Niên đính kèm:** Xem ngày âm lịch, can chi, hoàng đạo/hắc đạo... để không bỏ lỡ cái Tết nào.
+- 🧧 **Lịch Vạn Niên - Thuần Việt đính kèm:** Xem ngày âm lịch, can chi, hoàng đạo/hắc đạo... để không bỏ lỡ cái Tết nào.
 
 ### 🛠 Tech Stack & "Đồng bọn"
 Ứng dụng được hoàn thiện với sự hỗ trợ đắc lực từ đội ngũ "AI hùng hậu":

@@ -98,7 +98,7 @@ data class DateInfo(
     get() = HolidayRed
 
   fun colorOfLunarDay(display: ZodiacDisplay) =
-      if (lunarDate.zodiac.isAuspicious && display == ZodiacDisplay.Short) lunarDate.zodiac.color
+      if (lunarDate.zodiac.isAuspicious && display == ZodiacDisplay.ByColor) lunarDate.zodiac.color
       else null
 
   fun hasAdditionalData(option: OptionItem) =
