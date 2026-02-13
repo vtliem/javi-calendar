@@ -9,10 +9,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.vtl.javicalendar.R
 import com.vtl.javicalendar.presentation.model.Option
-import com.vtl.javicalendar.presentation.model.OptionItem
 import com.vtl.javicalendar.presentation.model.ZodiacDisplay
 
 @Composable
@@ -24,81 +24,124 @@ fun SettingsSection(option: Option, onOptionChanged: (Option) -> Unit) {
         modifier = Modifier.padding(bottom = 24.dp),
     )
 
-    // Day Detail Section
-    SettingsGroup(title = stringResource(R.string.settings_section_day_detail)) {
-      OptionItemSettings(
-          item = option.dayDetail,
-          onItemChanged = { onOptionChanged(option.copy(dayDetail = it)) },
-      )
-    }
+    // Sunday First at top
+    SettingSwitchItem(
+        label = stringResource(R.string.settings_sunday_first),
+        checked = option.sundayFirst,
+        onCheckedChange = { onOptionChanged(option.copy(sundayFirst = it)) },
+    )
 
     Spacer(modifier = Modifier.height(24.dp))
 
-    // Month Section
-    SettingsGroup(title = stringResource(R.string.settings_section_month)) {
-      OptionItemSettings(
-          item = option.month,
-          onItemChanged = { onOptionChanged(option.copy(month = it)) },
+    // 3-Column Header
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+      Spacer(modifier = Modifier.weight(1.5f))
+      Text(
+          text = stringResource(R.string.settings_section_day_detail),
+          style = MaterialTheme.typography.titleSmall,
+          modifier = Modifier.weight(1f),
+          textAlign = TextAlign.Center,
       )
-      SettingSwitchItem(
-          label = stringResource(R.string.settings_sunday_first),
-          checked = option.sundayFirst,
-          onCheckedChange = { onOptionChanged(option.copy(sundayFirst = it)) },
+      Text(
+          text = stringResource(R.string.settings_section_month),
+          style = MaterialTheme.typography.titleSmall,
+          modifier = Modifier.weight(1f),
+          textAlign = TextAlign.Center,
       )
     }
-  }
-}
 
-@Composable
-private fun SettingsGroup(title: String, content: @Composable ColumnScope.() -> Unit) {
-  Column(modifier = Modifier.fillMaxWidth()) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.titleMedium,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(bottom = 8.dp),
+    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+    // Japanese Date Row
+    SettingsRow(
+        label = stringResource(R.string.settings_japanese_date),
+        dayValue = option.dayDetail.japaneseDate,
+        monthValue = option.month.japaneseDate,
+        onDayChanged = {
+          onOptionChanged(option.copy(dayDetail = option.dayDetail.copy(japaneseDate = it)))
+        },
+        onMonthChanged = {
+          onOptionChanged(option.copy(month = option.month.copy(japaneseDate = it)))
+        },
     )
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        modifier = Modifier.fillMaxWidth(),
+
+    // Lunar Date Row
+    SettingsRow(
+        label = stringResource(R.string.settings_lunar_date),
+        dayValue = option.dayDetail.lunarDate,
+        monthValue = option.month.lunarDate,
+        onDayChanged = {
+          onOptionChanged(option.copy(dayDetail = option.dayDetail.copy(lunarDate = it)))
+        },
+        onMonthChanged = {
+          onOptionChanged(option.copy(month = option.month.copy(lunarDate = it)))
+        },
+    )
+
+    // Observance Row
+    SettingsRow(
+        label = stringResource(R.string.settings_observance),
+        dayValue = option.dayDetail.observance,
+        monthValue = option.month.observance,
+        onDayChanged = {
+          onOptionChanged(option.copy(dayDetail = option.dayDetail.copy(observance = it)))
+        },
+        onMonthChanged = {
+          onOptionChanged(option.copy(month = option.month.copy(observance = it)))
+        },
+    )
+
+    // Zodiac Row
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
     ) {
-      Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) { content() }
+      Text(
+          text = stringResource(R.string.settings_zodiac),
+          style = MaterialTheme.typography.bodyLarge,
+          modifier = Modifier.weight(1.5f),
+      )
+      Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+        ZodiacSelector(
+            selected = option.dayDetail.zodiac,
+            onSelected = {
+              onOptionChanged(option.copy(dayDetail = option.dayDetail.copy(zodiac = it)))
+            },
+        )
+      }
+      Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+        ZodiacSelector(
+            selected = option.month.zodiac,
+            onSelected = { onOptionChanged(option.copy(month = option.month.copy(zodiac = it))) },
+        )
+      }
     }
   }
 }
 
 @Composable
-private fun OptionItemSettings(item: OptionItem, onItemChanged: (OptionItem) -> Unit) {
-  SettingSwitchItem(
-      label = stringResource(R.string.settings_japanese_date),
-      checked = item.japaneseDate,
-      onCheckedChange = { onItemChanged(item.copy(japaneseDate = it)) },
-  )
-  SettingSwitchItem(
-      label = stringResource(R.string.settings_lunar_date),
-      checked = item.lunarDate,
-      onCheckedChange = { onItemChanged(item.copy(lunarDate = it)) },
-  )
-  SettingSwitchItem(
-      label = stringResource(R.string.settings_observance),
-      checked = item.observance,
-      onCheckedChange = { onItemChanged(item.copy(observance = it)) },
-  )
-
-  // Zodiac Display Selection
+private fun SettingsRow(
+    label: String,
+    dayValue: Boolean,
+    monthValue: Boolean,
+    onDayChanged: (Boolean) -> Unit,
+    onMonthChanged: (Boolean) -> Unit,
+) {
   Row(
-      modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
       verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.SpaceBetween,
+      modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
   ) {
     Text(
-        text = stringResource(R.string.settings_zodiac),
+        text = label,
         style = MaterialTheme.typography.bodyLarge,
+        modifier = Modifier.weight(1.5f),
     )
-    ZodiacSelector(
-        selected = item.zodiac,
-        onSelected = { onItemChanged(item.copy(zodiac = it)) },
-    )
+    Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+      Switch(checked = dayValue, onCheckedChange = onDayChanged)
+    }
+    Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+      Switch(checked = monthValue, onCheckedChange = onMonthChanged)
+    }
   }
 }
 
@@ -107,7 +150,9 @@ private fun ZodiacSelector(selected: ZodiacDisplay, onSelected: (ZodiacDisplay) 
   var expanded by remember { mutableStateOf(false) }
 
   Box {
-    TextButton(onClick = { expanded = true }) { Text(text = getZodiacDisplayName(selected)) }
+    TextButton(onClick = { expanded = true }, contentPadding = PaddingValues(0.dp)) {
+      Text(text = getZodiacDisplayName(selected), style = MaterialTheme.typography.bodySmall)
+    }
     DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
       ZodiacDisplay.entries.forEach { display ->
         DropdownMenuItem(
