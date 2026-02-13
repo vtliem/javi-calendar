@@ -1,19 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Lịch Nghỉ Lễ</string>
-    <string name="request_permission_text">Cần quyền truy cập lịch để hiển thị sự kiện.</string>
-    <string name="grant_permission_button">Cấp quyền</string>
-    <string name="no_events">Không có sự kiện.</string>
-    <string name="lunar_label">Âm lịch:</string>
-    <string name="auspicious_day">★ Ngày Hoàng Đạo</string>
-    <string name="todo_title">Lịch hẹn hôm nay</string>
-    <string name="month_format">Tháng %1$d năm %2$d</string>
-    <string name="today_format">%1$d/%2$d/%3$d</string>
-    <string name="auspicious_hours">Giờ HĐ: %s</string>
-    <string name="current_year">Năm hiện tại</string>
-    <string name="today">Hôm nay</string>
-    <string name="lunar_month_prefix">Tháng</string>
-    <string name="lunar_day_prefix">Ngày</string>
     <string name="settings_title">Cài đặt</string>
     <string name="settings_section_day_detail">Chi tiết ngày</string>
     <string name="settings_section_month">Lịch tháng</string>
