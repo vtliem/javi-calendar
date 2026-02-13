@@ -50,14 +50,17 @@ data class DateInfo(
     private val MonthFormatter = DateTimeFormatter.ofPattern("MMMM")
     val LocalDate.monthName: String
       get() = MonthFormatter.format(this)
+
+    val LocalDate.japaneseYar: String
+      get() {
+        val jpDate = JapaneseDate.from(this)
+        val era = jpDate.era.getDisplayName(TextStyle.FULL, Locale.JAPAN)
+        val eraYear = jpDate.get(java.time.temporal.ChronoField.YEAR_OF_ERA)
+        return "$era $eraYear"
+      }
   }
 
-  val japaneseYear by lazy {
-    val jpDate = JapaneseDate.from(value)
-    val era = jpDate.era.getDisplayName(TextStyle.FULL, Locale.JAPAN)
-    val eraYear = jpDate.get(java.time.temporal.ChronoField.YEAR_OF_ERA)
-    "$era $eraYear"
-  }
+  val japaneseYear by lazy { value.japaneseYar }
   val colorOfJapaneseYear
     get() = colorOfJapaneseYear(hasHolidayDataForOfYear)
 

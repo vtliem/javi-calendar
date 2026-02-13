@@ -15,12 +15,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.vtl.javicalendar.domain.model.JapaneseHolidays
+import com.vtl.javicalendar.presentation.model.DateInfo.Companion.japaneseYar
 import com.vtl.javicalendar.presentation.theme.Auspicious
 import com.vtl.javicalendar.utils.LunarCalendarUtils
 import java.time.LocalDate
-import java.time.chrono.JapaneseDate
-import java.time.format.TextStyle
-import java.util.*
 
 @Composable
 fun YearSelectionGrid(
@@ -68,17 +66,9 @@ private fun YearItem(year: Int, isSelected: Boolean, hasHolidayData: Boolean, on
   val itemInfo =
       remember(year) {
         val date = LocalDate.of(year, 6, 1)
-        val jpYear =
-            try {
-              val jpDate = JapaneseDate.from(date)
-              val era = jpDate.era.getDisplayName(TextStyle.FULL, Locale.JAPAN)
-              val eraYear = jpDate.get(java.time.temporal.ChronoField.YEAR_OF_ERA)
-              "$era $eraYear"
-            } catch (_: Exception) {
-              ""
-            }
+        val jpYear = date.japaneseYar
         val lunarDate = LunarCalendarUtils.convertSolarToLunar(1, 6, year)
-        Pair(jpYear, lunarDate.yearCanChi)
+        Pair(jpYear, lunarDate.year.shortName)
       }
 
   Card(
