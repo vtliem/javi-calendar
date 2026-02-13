@@ -151,25 +151,30 @@ data class LunarMonth(
     override val value: Int,
     override val can: Can,
     override val chi: Chi,
+    val isLeap: Boolean,
 ) : LunarDateField {
-  override val displayName: String
+  val monthName: String
     get() =
         when (value) {
           1 -> "Giêng"
           11 -> "Một"
           12 -> "Chạp"
           else -> value.toString()
-        }.let { "Tháng $it - $can $chi" }
+        }
+
+  override val displayName: String
+    get() = "Tháng $monthName - $can $chi${if(isLeap) " - Nhuận" else ""}"
 }
 
 data class LunarYear(
     override val value: Int,
     override val can: Can,
     override val chi: Chi,
-    val isLeap: Boolean,
+    val leapMonth: Int?,
 ) : LunarDateField {
   val shortName
-    get() = "$can $chi${if (isLeap) " - Nhuận" else ""}"
+    get() =
+        "$can $chi${leapMonth?.let { " - Nhuận(${LunarMonth(it, can, chi, false).monthName})" } ?: ""}"
 
   override val displayName: String
     get() = "$value - $shortName"
@@ -179,15 +184,14 @@ data class LunarDate(
     private val lunarYear: Int,
     private val lunarMonth: Int,
     private val lunarDay: Int,
-    val isLunarLeap: Boolean,
+    val leapMonth: Int?,
+    val isLeapMonth: Boolean,
     val julianDay: Int,
 ) {
-  val year by lazy {
-    LunarYear(lunarYear, Can.ofYear(lunarYear), Chi.ofYear(lunarYear), isLunarLeap)
-  }
+  val year by lazy { LunarYear(lunarYear, Can.ofYear(lunarYear), Chi.ofYear(lunarYear), leapMonth) }
 
   val month by lazy {
-    LunarMonth(lunarMonth, Can.ofMonth(lunarMonth, lunarYear), Chi.ofMonth(lunarMonth))
+    LunarMonth(lunarMonth, Can.ofMonth(lunarMonth, lunarYear), Chi.ofMonth(lunarMonth), isLeapMonth)
   }
   val day by lazy { LunarDay(lunarDay, Can.ofDay(julianDay), Chi.ofDay(julianDay)) }
   val observance by lazy { LunarObservances["$lunarDay/$lunarMonth"] }

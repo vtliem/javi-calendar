@@ -25,12 +25,12 @@ import com.vtl.javicalendar.domain.CalendarFactory
 import com.vtl.javicalendar.presentation.home.CalendarViewModel
 import com.vtl.javicalendar.presentation.home.ViewMode
 import com.vtl.javicalendar.presentation.home.components.*
+import com.vtl.javicalendar.presentation.model.DateInfo.Companion.japaneseYar
+import com.vtl.javicalendar.presentation.model.DateInfo.Companion.lunarDate
 import com.vtl.javicalendar.presentation.theme.Auspicious
 import com.vtl.javicalendar.presentation.theme.JaviCalendarTheme
-import com.vtl.javicalendar.utils.LunarCalendarUtils
 import com.vtl.javicalendar.widgets.WidgetManager
 import java.time.LocalDate
-import java.time.chrono.JapaneseDate
 import java.time.format.TextStyle
 import java.time.temporal.ChronoUnit
 import java.util.Locale
@@ -215,19 +215,17 @@ fun CalendarView(
             remember(monthDate, uiState.holidays, uiState.option.month.japaneseDate) {
               val jpYear =
                   if (uiState.option.month.japaneseDate) {
-                    try {
-                      val jpDate = JapaneseDate.from(monthDate)
-                      val era = jpDate.era.getDisplayName(TextStyle.FULL, Locale.JAPAN)
-                      val eraYear = jpDate.get(java.time.temporal.ChronoField.YEAR_OF_ERA)
-                      "$era $eraYear"
-                    } catch (_: Exception) {
-                      ""
+                    monthDate.japaneseYar
+                  } else ""
+              val lunarYear =
+                  if (uiState.option.month.lunarDate) {
+                    monthDate.lunarDate.let {
+                      if (it.year.value != monthDate.year) it.year.displayName
+                      else it.year.shortName
                     }
                   } else ""
-              val lunarDate =
-                  LunarCalendarUtils.convertSolarToLunar(1, monthDate.monthValue, monthDate.year)
               val hasHolidayData = uiState.holidays.hasData(monthDate.year)
-              Triple(jpYear, lunarDate.year.shortName, hasHolidayData)
+              Triple(jpYear, lunarYear, hasHolidayData)
             }
 
         Column(modifier = Modifier.padding(bottom = 24.dp)) {
@@ -252,11 +250,13 @@ fun CalendarView(
                 )
                 Spacer(modifier = Modifier.width(4.dp))
               }
-              Text(
-                  text = "(${headerInfo.second})",
-                  style = MaterialTheme.typography.labelMedium,
-                  color = MaterialTheme.colorScheme.secondary,
-              )
+              if (headerInfo.second.isNotEmpty()) {
+                Text(
+                    text = "(${headerInfo.second})",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.secondary,
+                )
+              }
             }
           }
           MonthGridSection(

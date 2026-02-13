@@ -101,10 +101,11 @@ object LunarCalendarUtils {
       yy: Int,
       timeZone: Double = 7.0,
   ): LunarDate {
-    val dayNumber = date2julianDay(dd, mm, yy)
-    val k = floor((dayNumber.toDouble() - 2415021.076998695) / 29.530588853).toInt()
+    val julianDay = date2julianDay(dd, mm, yy)
+    val k = floor((julianDay.toDouble() - 2415021.076998695) / 29.530588853).toInt()
+
     var monthStart = getNewMoonDay(k + 1, timeZone)
-    if (monthStart > dayNumber) {
+    if (monthStart > julianDay) {
       monthStart = getNewMoonDay(k, timeZone)
     }
 
@@ -119,27 +120,35 @@ object LunarCalendarUtils {
       b11 = getLunarMonth11(yy + 1, timeZone)
     }
 
-    val lunarDay = dayNumber - monthStart + 1
+    val lunarDay = julianDay - monthStart + 1
     val diff = floor((monthStart.toDouble() - a11.toDouble()) / 29.0).toInt()
 
-    var lunarLeap = 0
     var lunarMonth = diff + 11
+    var isCurrentMonthLeap = false
+    var leapMonthInYear: Int? = null
     if (b11 - a11 > 365) {
-      val leapMonthDiff = getLeapMonthOffset(a11.toDouble(), timeZone)
-      if (diff >= leapMonthDiff) {
+      val leapMonthOffset = getLeapMonthOffset(a11.toDouble(), timeZone)
+      leapMonthInYear = (leapMonthOffset + 10).let { if (it > 12) it - 12 else it }
+      if (diff >= leapMonthOffset) {
         lunarMonth = diff + 10
-        if (diff == leapMonthDiff) lunarLeap = 1
+        if (diff == leapMonthOffset) isCurrentMonthLeap = true
       }
     }
     if (lunarMonth > 12) lunarMonth -= 12
-    if (lunarMonth >= 11 && diff < 4) lunarYear -= 1
+    if (lunarMonth >= 11 && diff < 4) {
+      lunarYear -= 1
+      // If the next year was leap, this specific month (belonging to the previous year)
+      // should not carry the leapMonth status of the next year.
+      leapMonthInYear = null
+    }
 
     return LunarDate(
-        lunarYear,
-        lunarMonth,
-        lunarDay,
-        lunarLeap == 1,
-        dayNumber,
+        lunarYear = lunarYear,
+        lunarMonth = lunarMonth,
+        lunarDay = lunarDay,
+        leapMonth = leapMonthInYear,
+        isLeapMonth = isCurrentMonthLeap,
+        julianDay = julianDay,
     )
   }
 }
