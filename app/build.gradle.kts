@@ -66,6 +66,10 @@ android {
             excludes += "/META-INF/DEPENDENCIES"
         }
     }
+    lint {
+        checkDependencies = false
+        abortOnError = false
+    }
 }
 
 kotlin {

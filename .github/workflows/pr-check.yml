@@ -26,5 +26,11 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Run Static Analysis & Build
-      run: ./gradlew spotlessCheck lintDebug assembleDebug --parallel --no-daemon --stacktrace
+    - name: Run Spotless Check
+      run: ./gradlew spotlessCheck
+
+    - name: Run Lint
+      run: ./gradlew lintDebug
+
+    - name: Build Project
+      run: ./gradlew assembleDebug
