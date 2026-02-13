@@ -5,3 +5,6 @@ build
 .gradle
 *.hprof
 local.properties
+*.jks
+release
+gradle-daemon-jvm.properties
