@@ -192,7 +192,7 @@ private fun ZodiacSelector(
 private fun getZodiacDisplayName(display: ZodiacDisplay): String {
   return when (display) {
     ZodiacDisplay.Full -> stringResource(R.string.zodiac_display_full)
-    ZodiacDisplay.Short -> stringResource(R.string.zodiac_display_short)
+    ZodiacDisplay.ByColor -> stringResource(R.string.zodiac_display_color)
     ZodiacDisplay.None -> stringResource(R.string.zodiac_display_none)
   }
 }

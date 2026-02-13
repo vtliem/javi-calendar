@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 
 enum class ZodiacDisplay {
   Full,
-  Short,
+  ByColor,
   None,
 }
 
@@ -23,7 +23,7 @@ data class OptionItem(
           zodiac =
               if (zodiac != ZodiacDisplay.Full) zodiac
               else if (widgetSize.width >= 250.dp && widgetSize.height >= 400.dp) zodiac
-              else ZodiacDisplay.Short,
+              else ZodiacDisplay.ByColor,
           observance = observance && widgetSize.width >= 250.dp && widgetSize.height >= 400.dp,
       )
 }

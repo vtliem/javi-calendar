@@ -23,12 +23,10 @@ fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
       modifier = GlanceModifier.fillMaxWidth(),
       horizontalAlignment = Alignment.CenterHorizontally,
   ) {
-    // Line 1: Year (Era) [space] Day number (Weekday) [space] Month
     Row(
         modifier = GlanceModifier.fillMaxWidth(),
         verticalAlignment = Alignment.Top,
     ) {
-      // Year
       Column(modifier = GlanceModifier.defaultWeight()) {
         Text(
             text = dateInfo.value.year.toString(),
@@ -57,7 +55,6 @@ fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
         }
       }
 
-      // Day number (Weekday)
       Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = dateInfo.value.dayOfMonth.toString(),
@@ -75,7 +72,6 @@ fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
         )
       }
 
-      // Month
       Column(
           modifier = GlanceModifier.defaultWeight(),
           horizontalAlignment = Alignment.End,
@@ -99,7 +95,6 @@ fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
       }
     }
 
-    // Line 2: japanese holiday if has
     if (option.dayDetail.japaneseDate) {
       dateInfo.japaneseHoliday?.let {
         Spacer(modifier = GlanceModifier.height(2.dp))
@@ -115,7 +110,6 @@ fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
       }
     }
 
-    // Line 3: lunar day
     if (option.dayDetail.lunarDate) {
       Spacer(modifier = GlanceModifier.height(2.dp))
       Text(
@@ -128,32 +122,10 @@ fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
       )
     }
 
-    // zodiac
     if (option.dayDetail.lunarDate && option.dayDetail.zodiac == ZodiacDisplay.Full) {
-      Spacer(modifier = GlanceModifier.height(2.dp))
-      Text(
-          text = dateInfo.lunarDate.zodiac.toString(),
-          style = TextStyle(fontSize = 11.sp, color = widgetColor(dateInfo.lunarDate.zodiac.color)),
-          modifier = GlanceModifier.padding(start = 8.dp),
-      )
-      Text(
-          text = dateInfo.lunarDate.zodiac.detail,
-          style = TextStyle(fontSize = 10.sp, color = widgetColor(dateInfo.lunarDate.zodiac.color)),
-      )
-      // Line 6: auspiciousHours
-      Text(
-          text = dateInfo.lunarDate.auspiciousHours,
-          style =
-              TextStyle(
-                  fontSize = 10.sp,
-                  color = widgetColor(dateInfo.colorOfAuspiciousHours),
-                  textAlign = TextAlign.Center,
-              ),
-          maxLines = 2,
-      )
+      WidgetZodiacDetail(dateInfo)
     }
 
-    // observance if has
     if (option.dayDetail.lunarDate && option.dayDetail.observance) {
       dateInfo.lunarDate.observance?.let {
         Spacer(modifier = GlanceModifier.height(2.dp))
@@ -167,6 +139,65 @@ fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
                 ),
         )
       }
+    }
+  }
+}
+
+@Composable
+private fun WidgetZodiacDetail(dateInfo: DateInfo) {
+  val zodiac = dateInfo.lunarDate.zodiac
+  val duty = dateInfo.lunarDate.duty
+  Column(modifier = GlanceModifier.fillMaxWidth()) {
+    Spacer(modifier = GlanceModifier.height(2.dp))
+    Text(
+        text = zodiac.toString(),
+        style =
+            TextStyle(
+                fontSize = 11.sp,
+                color = widgetColor(zodiac.color, true),
+                textAlign = TextAlign.Center,
+            ),
+        modifier = GlanceModifier.fillMaxWidth(),
+    )
+    Text(
+        text = zodiac.detail,
+        style = TextStyle(fontSize = 10.sp, color = widgetColor(null, true)),
+    )
+    Column {
+      Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = "Trực: ",
+            style = TextStyle(fontSize = 8.sp, color = widgetColor(null, true)),
+        )
+        Text(
+            text = duty.dutyName,
+            style = TextStyle(fontSize = 10.sp, color = widgetColor(null)),
+        )
+      }
+      if (duty.goodFor.isNotEmpty()) {
+        Text(
+            text = duty.goodFor,
+            style = TextStyle(fontSize = 10.sp, color = widgetColor(null, true)),
+            modifier = GlanceModifier.padding(start = 12.dp),
+        )
+      }
+      if (duty.badFor.isNotEmpty()) {
+        Text(
+            text = duty.badFor,
+            style = TextStyle(fontSize = 10.sp, color = widgetColor(null, true)),
+            modifier = GlanceModifier.padding(start = 12.dp),
+        )
+      }
+    }
+    Row {
+      Text(
+          text = "Giờ Hoàng Đạo: ",
+          style = TextStyle(fontSize = 8.sp, color = widgetColor(null, true)),
+      )
+      Text(
+          text = dateInfo.lunarDate.auspiciousHours,
+          style = TextStyle(fontSize = 10.sp, color = widgetColor(dateInfo.colorOfAuspiciousHours)),
+      )
     }
   }
 }

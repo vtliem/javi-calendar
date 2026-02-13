@@ -10,6 +10,6 @@
     <string name="settings_zodiac">Hiển thị Hoàng Đạo</string>
     <string name="settings_sunday_first">Ngày đầu tuần: Chủ nhật</string>
     <string name="zodiac_display_full">Đầy đủ</string>
-    <string name="zodiac_display_short">Rút gọn</string>
+    <string name="zodiac_display_color">Theo màu sắc</string>
     <string name="zodiac_display_none">Không hiển thị</string>
 </resources>

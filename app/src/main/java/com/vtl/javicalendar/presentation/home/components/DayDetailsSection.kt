@@ -2,6 +2,7 @@ package com.vtl.javicalendar.presentation.home.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -28,16 +29,14 @@ fun DayDetailsSection(
   if (dateInfo == null) return
 
   Column(
-      modifier = Modifier.fillMaxWidth().padding(16.dp),
+      modifier = Modifier.fillMaxWidth().padding(8.dp),
       horizontalAlignment = Alignment.CenterHorizontally,
   ) {
-    // Line 1: Year (Era) [space] Day number (Weekday) [space] Month
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-      // Year (Clickable)
       Column(modifier = Modifier.weight(1f).clickable { onYearClick() }) {
         Text(
             text = dateInfo.value.year.toString(),
@@ -60,7 +59,6 @@ fun DayDetailsSection(
         }
       }
 
-      // Day number (Weekday)
       Column(
           horizontalAlignment = Alignment.CenterHorizontally,
           modifier = Modifier.clickable { onDayClick() },
@@ -79,7 +77,6 @@ fun DayDetailsSection(
         )
       }
 
-      // Month (Clickable)
       Column(
           modifier = Modifier.weight(1f).clickable { onMonthClick() },
           horizontalAlignment = Alignment.End,
@@ -102,7 +99,6 @@ fun DayDetailsSection(
 
     Spacer(modifier = Modifier.height(8.dp))
 
-    // Line 2: japanese holiday if has
     if (option.dayDetail.japaneseDate) {
       dateInfo.japaneseHoliday?.let {
         Text(
@@ -115,7 +111,6 @@ fun DayDetailsSection(
       }
     }
 
-    // Line 3: lunar day
     if (option.dayDetail.lunarDate) {
       Text(
           text = dateInfo.lunarDate.day.displayName,
@@ -126,32 +121,10 @@ fun DayDetailsSection(
       )
       Spacer(modifier = Modifier.height(4.dp))
     }
-    //  zodiac full display
-    if (option.dayDetail.lunarDate && option.dayDetail.zodiac === ZodiacDisplay.Full) {
-      Text(
-          text = dateInfo.lunarDate.zodiac.toString(),
-          style = MaterialTheme.typography.bodyMedium,
-          color = dateInfo.lunarDate.zodiac.color ?: MaterialTheme.colorScheme.onSurface,
-      )
-      // line 5: Detail
-      Text(
-          text = dateInfo.lunarDate.zodiac.detail,
-          style = MaterialTheme.typography.bodySmall,
-          color = MaterialTheme.colorScheme.onSurfaceVariant,
-      )
-      // Line 7: auspiciousHours
-      Text(
-          text = dateInfo.lunarDate.auspiciousHours,
-          style = MaterialTheme.typography.bodySmall,
-          color = dateInfo.colorOfAuspiciousHours,
-          textAlign = TextAlign.Center,
-          lineHeight = 16.sp,
-          modifier = Modifier.fillMaxWidth(),
-      )
-
+    if (option.dayDetail.lunarDate && option.dayDetail.zodiac == ZodiacDisplay.Full) {
+      ZodiacDetail(dateInfo)
       Spacer(modifier = Modifier.height(4.dp))
     }
-    // observance if has
     if (option.dayDetail.lunarDate && option.dayDetail.observance) {
       dateInfo.lunarDate.observance?.let {
         Text(
@@ -162,6 +135,71 @@ fun DayDetailsSection(
         )
       }
       Spacer(modifier = Modifier.height(4.dp))
+    }
+  }
+}
+
+@Composable
+private fun ZodiacDetail(dateInfo: DateInfo) {
+  val zodiac = dateInfo.lunarDate.zodiac
+  val duty = dateInfo.lunarDate.duty
+  Column(modifier = Modifier.fillMaxWidth()) {
+    Text(
+        text = zodiac.toString(),
+        style = MaterialTheme.typography.bodyMedium,
+        color = zodiac.color ?: MaterialTheme.colorScheme.onSurface,
+        modifier = Modifier.fillMaxWidth(),
+        textAlign = TextAlign.Center,
+    )
+    Text(
+        text = zodiac.detail,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    Column {
+      Row(
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(4.dp),
+      ) {
+        Text(
+            text = "Trực:",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = duty.dutyName,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+      }
+      if (duty.goodFor.isNotEmpty()) {
+        Text(
+            text = duty.goodFor,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = 16.dp),
+        )
+      }
+      if (duty.badFor.isNotEmpty()) {
+        Text(
+            text = duty.badFor,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = 16.dp),
+        )
+      }
+    }
+    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+      Text(
+          text = "Giờ Hoàng Đạo:",
+          style = MaterialTheme.typography.labelSmall,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+      )
+      Text(
+          text = dateInfo.lunarDate.auspiciousHours,
+          style = MaterialTheme.typography.bodySmall,
+          color = dateInfo.colorOfAuspiciousHours,
+      )
     }
   }
 }

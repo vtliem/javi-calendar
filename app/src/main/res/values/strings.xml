@@ -10,6 +10,6 @@
     <string name="settings_zodiac">Zodiac Display</string>
     <string name="settings_sunday_first">First day of week: Sunday</string>
     <string name="zodiac_display_full">Full</string>
-    <string name="zodiac_display_short">Short</string>
+    <string name="zodiac_display_color">By Color</string>
     <string name="zodiac_display_none">None</string>
 </resources>
