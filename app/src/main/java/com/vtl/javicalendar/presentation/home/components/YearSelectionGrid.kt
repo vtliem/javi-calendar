@@ -15,30 +15,30 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.vtl.javicalendar.domain.model.JapaneseHolidays
-import com.vtl.javicalendar.presentation.model.DateInfo.Companion.japaneseYar
+import com.vtl.javicalendar.presentation.model.DateInfo.Companion.japaneseYear
 import com.vtl.javicalendar.presentation.model.DateInfo.Companion.lunarDate
+import com.vtl.javicalendar.presentation.model.Option
 import com.vtl.javicalendar.presentation.theme.Auspicious
 import java.time.LocalDate
-import java.time.Month
 
 @Composable
 fun YearSelectionGrid(
     selectedYear: Int,
     holidays: JapaneseHolidays,
+    option: Option,
     onYearSelected: (Int) -> Unit,
 ) {
   // Range of 200 years to match the main calendar view: 100 years past and 100 years future
   val currentYear = LocalDate.now().year
   val years = remember { (currentYear - 100..currentYear + 100).toList() }
-  val gridState = rememberLazyGridState()
-
-  LaunchedEffect(Unit) {
-    val initialIndex = years.indexOf(selectedYear)
-    if (initialIndex != -1) {
-      // Scroll to the selected year, centered roughly
-      gridState.scrollToItem(maxOf(0, initialIndex - 6))
-    }
+  val initialIndex = remember {
+    val index = years.indexOf(selectedYear)
+    if (index != -1) maxOf(0, index - 6) else 0
   }
+
+  val gridState = rememberLazyGridState(
+    initialFirstVisibleItemIndex = initialIndex
+  )
 
   Column(modifier = Modifier.fillMaxSize()) {
     LazyVerticalGrid(
@@ -51,6 +51,7 @@ fun YearSelectionGrid(
     ) {
       items(years, key = { it }) { year ->
         YearItem(
+            option = option,
             year = year,
             isSelected = year == selectedYear,
             hasHolidayData = holidays.hasData(year),
@@ -62,42 +63,52 @@ fun YearSelectionGrid(
 }
 
 @Composable
-private fun YearItem(year: Int, isSelected: Boolean, hasHolidayData: Boolean, onClick: () -> Unit) {
-  // Optimize: only calculate if this year is actually visible
-  val itemInfo =
-      remember(year) {
-        val date = LocalDate.of(year, 6, 1)
-        Pair(date.japaneseYar, date.withMonth(Month.JUNE.value).lunarDate.year.shortName)
-      }
+private fun YearItem(option: Option, year: Int, isSelected: Boolean, hasHolidayData: Boolean, onClick: () -> Unit) {
+  // 1. Use produceState to move calculation to a background thread
+  // This returns a State object that starts with a "Loading" or Empty value
+  val itemInfo by produceState<Pair<String, String>?>(initialValue = null, year) {
+    // This runs in a Dispatcher.Default (background) coroutine
+    val date = LocalDate.of(year, 6, 1)
+    value = Pair(
+      if(option.dayDetail.japaneseDate) date.japaneseYear else "",
+      if(option.dayDetail.lunarDate) date.lunarDate.year.shortName else ""
+    )
+  }
 
   Card(
-      modifier = Modifier.fillMaxWidth().clickable { onClick() },
-      colors =
-          CardDefaults.cardColors(
-              containerColor =
-                  if (isSelected) MaterialTheme.colorScheme.primaryContainer
-                  else MaterialTheme.colorScheme.surfaceVariant
-          ),
+    modifier = Modifier.fillMaxWidth().clickable { onClick() },
+    colors = CardDefaults.cardColors(
+      containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer
+      else MaterialTheme.colorScheme.surfaceVariant
+    ),
   ) {
-    Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+      modifier = Modifier.fillMaxWidth().padding(8.dp).heightIn(min = 80.dp), // Fixed height prevents jumping
+      horizontalAlignment = Alignment.CenterHorizontally
+    ) {
       Text(
-          text = year.toString(),
-          style = MaterialTheme.typography.titleLarge,
-          fontWeight = FontWeight.Bold,
+        text = year.toString(),
+        style = MaterialTheme.typography.titleLarge,
+        fontWeight = FontWeight.Bold,
       )
-      if (itemInfo.first.isNotEmpty()) {
-        Text(
-            text = itemInfo.first,
+
+      // Only show if the background calculation is finished
+      itemInfo?.let {
+        val (japaneseYear, lunarYear) = it
+        if (japaneseYear.isNotEmpty()) {
+          Text(
+            text = japaneseYear,
             style = MaterialTheme.typography.labelSmall,
             textAlign = TextAlign.Center,
             color = if (!hasHolidayData) Auspicious else Color.Unspecified,
-        )
-      }
-      Text(
-          text = itemInfo.second,
+          )
+        }
+        Text(
+          text = lunarYear,
           style = MaterialTheme.typography.labelSmall,
           textAlign = TextAlign.Center,
-      )
+        )
+      }
     }
   }
 }

@@ -52,7 +52,7 @@ data class DateInfo(
     val LocalDate.monthName: String
       get() = MonthFormatter.format(this)
 
-    val LocalDate.japaneseYar: String
+    val LocalDate.japaneseYear: String
       get() {
         val jpDate = JapaneseDate.from(this)
         val era = jpDate.era.getDisplayName(TextStyle.FULL, Locale.JAPAN)
@@ -64,7 +64,7 @@ data class DateInfo(
       get() = convertSolarToLunar(dayOfMonth, monthValue, year)
   }
 
-  val japaneseYear by lazy { value.japaneseYar }
+  val japaneseYear by lazy { value.japaneseYear }
   val colorOfJapaneseYear
     get() = colorOfJapaneseYear(hasHolidayDataForOfYear)
 

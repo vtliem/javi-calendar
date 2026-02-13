@@ -25,7 +25,7 @@ import com.vtl.javicalendar.domain.CalendarFactory
 import com.vtl.javicalendar.presentation.home.CalendarViewModel
 import com.vtl.javicalendar.presentation.home.ViewMode
 import com.vtl.javicalendar.presentation.home.components.*
-import com.vtl.javicalendar.presentation.model.DateInfo.Companion.japaneseYar
+import com.vtl.javicalendar.presentation.model.DateInfo.Companion.japaneseYear
 import com.vtl.javicalendar.presentation.model.DateInfo.Companion.lunarDate
 import com.vtl.javicalendar.presentation.theme.Auspicious
 import com.vtl.javicalendar.presentation.theme.JaviCalendarTheme
@@ -97,6 +97,7 @@ class MainActivity : ComponentActivity() {
                       YearSelectionGrid(
                           selectedYear = uiState.selectedDate.year,
                           holidays = uiState.holidays,
+                          option = uiState.option,
                           onYearSelected = { vm.changeYear(it) },
                       )
                     }
@@ -215,7 +216,7 @@ fun CalendarView(
             remember(monthDate, uiState.holidays, uiState.option.month.japaneseDate) {
               val jpYear =
                   if (uiState.option.month.japaneseDate) {
-                    monthDate.japaneseYar
+                    monthDate.japaneseYear
                   } else ""
               val lunarYear =
                   if (uiState.option.month.lunarDate) {
