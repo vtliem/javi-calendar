@@ -1,5 +1,6 @@
 package com.vtl.javicalendar.presentation.model
 
+import com.vtl.javicalendar.domain.model.LunarDate
 import com.vtl.javicalendar.domain.model.Zodiac
 import com.vtl.javicalendar.presentation.theme.Auspicious
 import com.vtl.javicalendar.presentation.theme.AuspiciousHours
@@ -58,6 +59,9 @@ data class DateInfo(
         val eraYear = jpDate.get(java.time.temporal.ChronoField.YEAR_OF_ERA)
         return "$era $eraYear"
       }
+
+    val LocalDate.lunarDate: LunarDate
+      get() = convertSolarToLunar(dayOfMonth, monthValue, year)
   }
 
   val japaneseYear by lazy { value.japaneseYar }
