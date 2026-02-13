@@ -89,6 +89,8 @@ fun SettingsSection(option: Option, onOptionChanged: (Option) -> Unit) {
         onMonthChanged = {
           onOptionChanged(option.copy(month = option.month.copy(observance = it)))
         },
+        dayEnabled = option.dayDetail.lunarDate,
+        monthEnabled = option.month.lunarDate,
     )
 
     // Zodiac Row
@@ -100,6 +102,10 @@ fun SettingsSection(option: Option, onOptionChanged: (Option) -> Unit) {
           text = stringResource(R.string.settings_zodiac),
           style = MaterialTheme.typography.bodyLarge,
           modifier = Modifier.weight(1.5f),
+          color =
+              if (option.dayDetail.lunarDate || option.month.lunarDate)
+                  MaterialTheme.colorScheme.onSurface
+              else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
       )
       Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
         ZodiacSelector(
@@ -107,12 +113,14 @@ fun SettingsSection(option: Option, onOptionChanged: (Option) -> Unit) {
             onSelected = {
               onOptionChanged(option.copy(dayDetail = option.dayDetail.copy(zodiac = it)))
             },
+            enabled = option.dayDetail.lunarDate,
         )
       }
       Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
         ZodiacSelector(
             selected = option.month.zodiac,
             onSelected = { onOptionChanged(option.copy(month = option.month.copy(zodiac = it))) },
+            enabled = option.month.lunarDate,
         )
       }
     }
@@ -126,6 +134,8 @@ private fun SettingsRow(
     monthValue: Boolean,
     onDayChanged: (Boolean) -> Unit,
     onMonthChanged: (Boolean) -> Unit,
+    dayEnabled: Boolean = true,
+    monthEnabled: Boolean = true,
 ) {
   Row(
       verticalAlignment = Alignment.CenterVertically,
@@ -135,22 +145,33 @@ private fun SettingsRow(
         text = label,
         style = MaterialTheme.typography.bodyLarge,
         modifier = Modifier.weight(1.5f),
+        color =
+            if (dayEnabled || monthEnabled) MaterialTheme.colorScheme.onSurface
+            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
     )
     Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-      Switch(checked = dayValue, onCheckedChange = onDayChanged)
+      Switch(checked = dayValue, onCheckedChange = onDayChanged, enabled = dayEnabled)
     }
     Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-      Switch(checked = monthValue, onCheckedChange = onMonthChanged)
+      Switch(checked = monthValue, onCheckedChange = onMonthChanged, enabled = monthEnabled)
     }
   }
 }
 
 @Composable
-private fun ZodiacSelector(selected: ZodiacDisplay, onSelected: (ZodiacDisplay) -> Unit) {
+private fun ZodiacSelector(
+    selected: ZodiacDisplay,
+    onSelected: (ZodiacDisplay) -> Unit,
+    enabled: Boolean = true,
+) {
   var expanded by remember { mutableStateOf(false) }
 
   Box {
-    TextButton(onClick = { expanded = true }, contentPadding = PaddingValues(0.dp)) {
+    TextButton(
+        onClick = { expanded = true },
+        contentPadding = PaddingValues(0.dp),
+        enabled = enabled,
+    ) {
       Text(text = getZodiacDisplayName(selected), style = MaterialTheme.typography.bodySmall)
     }
     DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {

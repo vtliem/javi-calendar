@@ -127,7 +127,7 @@ fun DayDetailsSection(
       Spacer(modifier = Modifier.height(4.dp))
     }
     //  zodiac full display
-    if (option.dayDetail.zodiac === ZodiacDisplay.Full) {
+    if (option.dayDetail.lunarDate && option.dayDetail.zodiac === ZodiacDisplay.Full) {
       Text(
           text = dateInfo.lunarDate.zodiac.toString(),
           style = MaterialTheme.typography.bodyMedium,
@@ -152,7 +152,7 @@ fun DayDetailsSection(
       Spacer(modifier = Modifier.height(4.dp))
     }
     // observance if has
-    if (option.dayDetail.observance) {
+    if (option.dayDetail.lunarDate && option.dayDetail.observance) {
       dateInfo.lunarDate.observance?.let {
         Text(
             text = it,

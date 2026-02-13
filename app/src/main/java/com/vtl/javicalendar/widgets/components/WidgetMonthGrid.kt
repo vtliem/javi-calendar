@@ -123,7 +123,7 @@ private fun RowScope.WidgetDayCell(dateInfo: DateInfo, option: Option) {
     }
 
     // Line 3: Zodiac
-    if (option.month.zodiac == ZodiacDisplay.Full) {
+    if (option.month.lunarDate && option.month.zodiac == ZodiacDisplay.Full) {
       Text(
           text = dateInfo.lunarDate.zodiac.zodiacName,
           style =
@@ -137,7 +137,7 @@ private fun RowScope.WidgetDayCell(dateInfo: DateInfo, option: Option) {
     }
 
     // Line 4: Observance
-    if (option.month.observance) {
+    if (option.month.lunarDate && option.month.observance) {
       dateInfo.lunarDate.observance?.let {
         Text(
             text = it,
