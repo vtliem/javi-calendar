@@ -26,7 +26,7 @@ fun WidgetMonthGrid(monthInfo: MonthInfo?, option: Option) {
 
   // Weekday Headers
   Row(modifier = GlanceModifier.fillMaxWidth().padding(bottom = 2.dp)) {
-    monthInfo.daysOfWeek(sundayFirst = option.sundayFirst).forEach { dayOfWeek ->
+    monthInfo.daysOfWeek.forEach { dayOfWeek ->
       Text(
           text = dayOfWeek.shortName,
           style =

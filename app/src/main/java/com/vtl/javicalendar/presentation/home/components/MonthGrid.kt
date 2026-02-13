@@ -55,7 +55,7 @@ fun MonthGridSection(
   Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
     // Weekday Headers
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-      monthInfo.daysOfWeek(sundayFirst = option.sundayFirst).forEach { dayOfWeek ->
+      monthInfo.daysOfWeek.forEach { dayOfWeek ->
         Text(
             text = dayOfWeek.shortName,
             modifier = Modifier.weight(1f),

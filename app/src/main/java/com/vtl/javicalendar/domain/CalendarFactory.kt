@@ -3,11 +3,13 @@ package com.vtl.javicalendar.domain
 import com.vtl.javicalendar.domain.model.JapaneseHolidays
 import com.vtl.javicalendar.presentation.model.DateInfo
 import com.vtl.javicalendar.presentation.model.MonthInfo
+import java.time.DayOfWeek
 import java.time.LocalDate
 
 object CalendarFactory {
 
   fun createMonthInfo(
+      sundayFist: Boolean,
       year: Int,
       month: Int,
       holidays: JapaneseHolidays,
@@ -17,9 +19,18 @@ object CalendarFactory {
     val firstDayOfMonth = LocalDate.of(year, month, 1)
     val daysInMonth = firstDayOfMonth.lengthOfMonth()
 
+    val daysOfWeek =
+        if (sundayFist) {
+          listOf(DayOfWeek.SUNDAY) + DayOfWeek.entries.filterNot { it == DayOfWeek.SUNDAY }
+        } else DayOfWeek.entries
+
     // Calculate grid layout
-    val firstDayOfWeekValue = firstDayOfMonth.dayOfWeek.value
-    val leadingEmptySlots = if (firstDayOfWeekValue == 7) 0 else firstDayOfWeekValue
+    val leadingEmptySlots =
+        if (sundayFist) {
+          if (firstDayOfMonth.dayOfWeek == DayOfWeek.SUNDAY) 0 else firstDayOfMonth.dayOfWeek.value
+        } else {
+          firstDayOfMonth.dayOfWeek.value - 1
+        }
     val numOfWeeks = (daysInMonth + leadingEmptySlots + 6) / 7
 
     val weeks =
@@ -34,7 +45,7 @@ object CalendarFactory {
               }
             }
             .chunked(7)
-    return MonthInfo(weeks)
+    return MonthInfo(daysOfWeek, weeks)
   }
 
   /** Create a DateInfo with all formatting and colors */

@@ -94,6 +94,7 @@ fun CalendarView(
                 },
             ) {
               CalendarFactory.createMonthInfo(
+                  uiState.option.sundayFirst,
                   monthDate.year,
                   monthDate.monthValue,
                   uiState.holidays,

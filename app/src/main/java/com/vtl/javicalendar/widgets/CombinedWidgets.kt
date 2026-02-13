@@ -46,7 +46,13 @@ class CombinedWidget : GlanceAppWidget() {
   private fun createData(sources: CalendarSources): WidgetData {
     val today = sources.today
     val monthInfo =
-        CalendarFactory.createMonthInfo(today.year, today.monthValue, sources.holidays, today)
+        CalendarFactory.createMonthInfo(
+            sources.option.sundayFirst,
+            today.year,
+            today.monthValue,
+            sources.holidays,
+            today,
+        )
 
     val dateInfo = monthInfo.getDate(today)
     return WidgetData(monthInfo, dateInfo, sources.option)
