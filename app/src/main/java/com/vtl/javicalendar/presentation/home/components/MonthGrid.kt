@@ -36,6 +36,18 @@ fun MonthGridSection(
 ) {
   if (monthInfo == null) return
 
+  val allLunarDates by
+      produceState<Map<LocalDate, LunarDate>?>(initialValue = null, monthInfo, option.month) {
+        value =
+            if (option.month.lunarDate) {
+              withContext(Dispatchers.Default) {
+                monthInfo.weeks.flatten().filterNotNull().associate { it.value to it.lunarDate }
+              }
+            } else {
+              null
+            }
+      }
+
   Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
     // Weekday Headers
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -64,6 +76,7 @@ fun MonthGridSection(
           } else {
             DayCell(
                 dateInfo = dateInfo,
+                lunarDate = allLunarDates?.get(dateInfo.value),
                 option = option,
                 modifier = Modifier.weight(1f).clickable { onDateSelected(dateInfo.value) },
             )
@@ -77,23 +90,10 @@ fun MonthGridSection(
 @Composable
 fun DayCell(
     dateInfo: DateInfo,
+    lunarDate: LunarDate?,
     modifier: Modifier = Modifier,
     option: Option = Option(),
 ) {
-  val lunarDate by
-      produceState<LunarDate?>(initialValue = null, dateInfo.value, option.month) {
-        value =
-            if (
-                option.month.lunarDate ||
-                    option.month.zodiac != ZodiacDisplay.None ||
-                    option.month.observance
-            ) {
-              withContext(Dispatchers.Default) { dateInfo.lunarDate }
-            } else {
-              null
-            }
-      }
-
   Column(
       horizontalAlignment = Alignment.CenterHorizontally,
       modifier =
@@ -108,10 +108,10 @@ fun DayCell(
             Arrangement.spacedBy(6.dp, alignment = Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-      lunarDate?.let {
+      if (option.month.lunarDate && lunarDate != null) {
         val lunarDayText =
-            if (lunarDate!!.day.value == 1) "${it.day.value}/${it.month.value}"
-            else it.day.value.toString()
+            if (lunarDate.day.value == 1) "${lunarDate.day.value}/${lunarDate.month.value}"
+            else lunarDate.day.value.toString()
         Text(
             text = lunarDayText,
             style = MaterialTheme.typography.labelSmall,
@@ -153,19 +153,17 @@ fun DayCell(
     }
 
     // Line 3: Zodiac
-    if (option.month.zodiac == ZodiacDisplay.Full) {
-      lunarDate?.let {
-        Text(
-            text = it.zodiac.godName,
-            fontSize = 8.sp,
-            color = it.zodiac.color ?: MaterialTheme.colorScheme.onSurface,
-            maxLines = 1,
-        )
-      }
+    if (option.month.lunarDate && option.month.zodiac == ZodiacDisplay.Full && lunarDate != null) {
+      Text(
+          text = lunarDate.zodiac.godName,
+          fontSize = 8.sp,
+          color = lunarDate.zodiac.color ?: MaterialTheme.colorScheme.onSurface,
+          maxLines = 1,
+      )
     }
 
-    if (option.month.observance) {
-      lunarDate?.observance?.let {
+    if (option.month.lunarDate && option.month.observance && lunarDate != null) {
+      lunarDate.observance?.let {
         Text(
             text = it,
             fontSize = 7.sp,

@@ -78,7 +78,10 @@ fun CalendarView(
         modifier = Modifier.weight(1f),
         contentPadding = PaddingValues(bottom = 200.dp),
     ) {
-      items(totalItems) { index ->
+      items(
+          count = totalItems,
+          key = { index -> referenceMonth.plusMonths(index.toLong()).toString() },
+      ) { index ->
         val monthDate = referenceMonth.plusMonths(index.toLong())
         val monthInfo =
             remember(
