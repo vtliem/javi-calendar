@@ -205,8 +205,8 @@ enum class Duty(
       "👍 Rất tốt cho nhập học, kết hôn, khai trương, dọn về nhà mới.",
       "👎 Nên tránh việc kiện tụng, tranh chấp hoặc cãi vã.",
   ),
-  Thau(
-      "Thâu",
+  Thu(
+      "Thu",
       "👍 Tốt cho mở cửa hàng, thu mua hàng hóa, thu nợ, tích lũy tài sản.",
       "👎 Nên tránh các việc liên quan đến ma chay, an táng, tảo mộ.",
   ),
@@ -223,10 +223,10 @@ enum class Duty(
 
   companion object {
     fun of(
-        month: LunarMonth,
+        solarTermMonthChi: Int,
         day: LunarDay,
     ): Duty {
-      val dutyIndex = (day.chi.ordinal - month.chi.ordinal + 12) % 12
+      val dutyIndex = (day.chi.ordinal - solarTermMonthChi + 12) % 12
       return entries[dutyIndex]
     }
   }
@@ -249,3 +249,33 @@ internal fun calcAuspiciousHours(day: LunarDay): List<String> =
         .map { (i, _) ->
           "${Chi.entries[i].displayName} (${(i * 2 + 23) % 24}-${(i * 2 + 1) % 24}h)"
         }
+
+private val solarTerms =
+    listOf(
+        "Lập Xuân",
+        "Vũ Thủy",
+        "Kinh Trập",
+        "Xuân Phân",
+        "Thanh Minh",
+        "Cốc Vũ",
+        "Lập Hạ",
+        "Tiểu Mãn",
+        "Mang Chủng",
+        "Hạ Chí",
+        "Tiểu Thử",
+        "Đại Thử",
+        "Lập Thu",
+        "Xử Thử",
+        "Bạch Lộ",
+        "Thu Phân",
+        "Hàn Lộ",
+        "Sương Giáng",
+        "Lập Đông",
+        "Tiểu Tuyết",
+        "Đại Tuyết",
+        "Đông Chí",
+        "Tiểu Hàn",
+        "Đại Hàn",
+    )
+
+fun getSolarTermName(solarTerm: Int) = solarTerms.getOrNull(solarTerm)

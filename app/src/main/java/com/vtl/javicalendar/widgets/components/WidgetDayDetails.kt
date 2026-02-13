@@ -173,6 +173,17 @@ private fun WidgetZodiacDetail(dateInfo: DateInfo) {
             text = duty.dutyName,
             style = TextStyle(fontSize = 10.sp, color = widgetColor(null)),
         )
+        dateInfo.lunarDate.solarTermName?.let {
+          Text(
+              text = "Tiết khí:",
+              style = TextStyle(fontSize = 8.sp, color = widgetColor(null, true)),
+              modifier = GlanceModifier.padding(start = 16.dp),
+          )
+          Text(
+              text = it,
+              style = TextStyle(fontSize = 10.sp, color = widgetColor(null)),
+          )
+        }
       }
       if (duty.goodFor.isNotEmpty()) {
         Text(

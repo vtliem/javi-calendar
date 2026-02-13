@@ -171,6 +171,19 @@ private fun ZodiacDetail(dateInfo: DateInfo) {
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurface,
         )
+        dateInfo.lunarDate.solarTermName?.let {
+          Text(
+              text = "Tiết khí:",
+              style = MaterialTheme.typography.labelSmall,
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+              modifier = Modifier.padding(start = 16.dp),
+          )
+          Text(
+              text = it,
+              style = MaterialTheme.typography.bodySmall,
+              color = MaterialTheme.colorScheme.onSurface,
+          )
+        }
       }
       if (duty.goodFor.isNotEmpty()) {
         Text(
