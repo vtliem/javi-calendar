@@ -1,46 +1,50 @@
 package com.vtl.javicalendar.worker
 
 import android.content.Context
+import android.util.Log
 import androidx.work.*
 import com.vtl.javicalendar.JaviCalendarApp
 import com.vtl.javicalendar.widgets.WidgetManager
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.flow.first
 
 class DailyUpdateWorker(context: Context, workerParams: WorkerParameters) :
     CoroutineWorker(context, workerParams) {
 
   override suspend fun doWork(): Result {
+    Log.v(WORK_NAME, "doWork")
+
     val app = applicationContext as JaviCalendarApp
-    val calendarSourcesUseCase = app.container.calendarSourcesUseCase
-    if (!calendarSourcesUseCase.refresh()) {
-      val sources = calendarSourcesUseCase().first()
-      WidgetManager.triggerUpdate(app, sources)
-    }
+    app.container.calendarSourcesUseCase.refresh()
+    val sources = app.container.calendarSourcesUseCase().first()
+    WidgetManager.triggerUpdate(app, sources)
+
+    schedule(applicationContext, nextMidnight())
     return Result.success()
   }
 
   companion object {
     private const val WORK_NAME = "DailyUpdateWorker"
 
-    fun schedule(context: Context) {
-      val workManager = WorkManager.getInstance(context)
-
-      // Calculate delay until next midnight
+    fun nextMidnight(): Duration {
       val now = LocalDateTime.now()
-      val nextMidnight = LocalDateTime.of(now.toLocalDate().plusDays(1), LocalTime.MIDNIGHT)
-      val delay = Duration.between(now, nextMidnight).toMinutes()
+      val midnight = LocalDateTime.of(now.toLocalDate().plusDays(1), LocalTime.MIDNIGHT)
+      return Duration.between(now, midnight)
+    }
 
+    fun schedule(context: Context, delay: Duration) {
+
+      Log.v(WORK_NAME, "schedule: $delay")
       val request =
-          PeriodicWorkRequestBuilder<DailyUpdateWorker>(24, TimeUnit.HOURS)
-              .setInitialDelay(delay, TimeUnit.MINUTES)
-              .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
+          OneTimeWorkRequestBuilder<DailyUpdateWorker>()
+              .setInitialDelay(delay)
+              .addTag(WORK_NAME)
               .build()
 
-      workManager.enqueueUniquePeriodicWork(WORK_NAME, ExistingPeriodicWorkPolicy.UPDATE, request)
+      WorkManager.getInstance(context)
+          .enqueueUniqueWork(WORK_NAME, ExistingWorkPolicy.REPLACE, request)
     }
   }
 }

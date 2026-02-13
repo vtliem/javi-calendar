@@ -7,10 +7,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
-import androidx.glance.GlanceTheme
 import androidx.glance.LocalSize
 import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
@@ -25,16 +23,14 @@ import androidx.glance.state.GlanceStateDefinition
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import com.vtl.javicalendar.MainActivity
 import com.vtl.javicalendar.domain.CalendarFactory
-import com.vtl.javicalendar.domain.CalendarSourcesUseCase
 import com.vtl.javicalendar.presentation.model.CalendarSources
 import com.vtl.javicalendar.presentation.model.DateInfo
 import com.vtl.javicalendar.presentation.model.MonthInfo
 import com.vtl.javicalendar.presentation.model.Option
 import com.vtl.javicalendar.presentation.theme.*
+import com.vtl.javicalendar.widgets.WidgetManager.loadOrCreateSources
 import com.vtl.javicalendar.widgets.components.WidgetDayDetails
 import com.vtl.javicalendar.widgets.components.WidgetMonthGrid
-import kotlinx.coroutines.flow.first
-import kotlinx.serialization.json.Json
 
 class CombinedWidget : GlanceAppWidget() {
   private data class WidgetData(
@@ -46,17 +42,6 @@ class CombinedWidget : GlanceAppWidget() {
   override val sizeMode = SizeMode.Exact
 
   override val stateDefinition: GlanceStateDefinition<*> = PreferencesGlanceStateDefinition
-
-  private val json = Json { ignoreUnknownKeys = true }
-
-  private suspend fun loadSources(context: Context, sourcesJson: String?): CalendarSources {
-    sourcesJson
-        ?.let { runCatching { json.decodeFromString<CalendarSources>(it) }.getOrNull() }
-        ?.let {
-          return it
-        }
-    return CalendarSourcesUseCase.create(context)().first()
-  }
 
   private fun createData(sources: CalendarSources): WidgetData {
     val today = sources.today
@@ -74,8 +59,7 @@ class CombinedWidget : GlanceAppWidget() {
 
       val state by
           produceState<WidgetData?>(initialValue = null, prefs) {
-            val jsonString = prefs[stringPreferencesKey("sources")]
-            val sources = loadSources(context, jsonString)
+            val sources = loadOrCreateSources(context, prefs)
             value = createData(sources)
           }
       val displayOption = state?.option?.adjustBySize(widgetSize) ?: Option()
@@ -99,12 +83,6 @@ class CombinedWidget : GlanceAppWidget() {
       WidgetDayDetails(dateInfo, option)
 
       Spacer(modifier = GlanceModifier.height(8.dp))
-
-      // Divider
-      Box(
-          modifier =
-              GlanceModifier.fillMaxWidth().height(1.dp).background(GlanceTheme.colors.outline)
-      ) {}
 
       Spacer(modifier = GlanceModifier.height(8.dp))
 

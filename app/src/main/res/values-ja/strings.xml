@@ -20,7 +20,7 @@
     <string name="settings_lunar_date">旧暦</string>
     <string name="settings_observance">祝日・行事</string>
     <string name="settings_zodiac">十二支の表示</string>
-    <string name="settings_sunday_first">日曜日を週の開始日にする</string>
+    <string name="settings_sunday_first">週の開始日：日曜日</string>
     <string name="zodiac_display_full">フル</string>
     <string name="zodiac_display_short">ショート</string>
     <string name="zodiac_display_none">非表示</string>
