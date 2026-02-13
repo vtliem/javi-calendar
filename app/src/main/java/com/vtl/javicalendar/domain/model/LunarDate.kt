@@ -124,6 +124,8 @@ data class LunarDate(
     val leapMonth: Int?,
     val isLeapMonth: Boolean,
     val julianDay: Int,
+    val solarTerm: Int,
+    val solarTermMonthChi: Int,
 ) {
   val year by lazy { LunarYear(lunarYear, Can.ofYear(lunarYear), Chi.ofYear(lunarYear), leapMonth) }
 
@@ -138,7 +140,10 @@ data class LunarDate(
     get() = Zodiac.of(month, day)
 
   val duty
-    get() = Duty.of(month, day)
+    get() = Duty.of(solarTermMonthChi, day)
+
+  val solarTermName
+    get() = getSolarTermName(solarTerm)
 
   val auspiciousHours
     get() = calcAuspiciousHours(day).joinToString(", ")

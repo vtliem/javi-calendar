@@ -157,7 +157,7 @@ object LunarCalendarUtils {
       // should not carry the leapMonth status of the next year.
       leapMonthInYear = null
     }
-
+    val (solarTerm, solarTermMonthChi) = getSolarTermMonthChi(julianDay)
     return LunarDate(
         lunarYear = lunarYear,
         lunarMonth = lunarMonth,
@@ -165,6 +165,31 @@ object LunarCalendarUtils {
         leapMonth = leapMonthInYear,
         isLeapMonth = isCurrentMonthLeap,
         julianDay = julianDay,
+        solarTerm = solarTerm,
+        solarTermMonthChi = solarTermMonthChi,
     )
+  }
+
+  /** @return Pair<solarTerm, solarTermMonthChi> */
+  private fun getSolarTermMonthChi(jd: Int): Pair<Int, Int> {
+    // 1. Lấy kinh độ Mặt Trời (đơn vị: độ 0-359)
+    val l = sunLongitude(jd.toDouble() - 0.5 - LUNAR_TIME_ZONE / 24.0) * 180.0 / PI
+
+    // 2. Chuyển đổi kinh độ sang chỉ số Tiết khí (0-11)
+    // Lập Xuân bắt đầu từ 315 độ. Ta cộng thêm 45 độ để đưa Lập Xuân về 0 độ (vòng tròn 360).
+    val termIndex = floor(((l + 45.0) % 360.0) / 30.0).toInt()
+
+    // 3. Map từ chỉ số Tiết khí sang Chi tương ứng:
+    // Index 0 (Kinh độ 315-345: Tiết Lập Xuân) -> Tháng Dần (2)
+    // Index 1 (Kinh độ 345-15: Tiết Kinh Trập) -> Tháng Mão (3)
+    // ...
+    val mapping = intArrayOf(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1)
+    val solarTermMonthChi = mapping[termIndex]
+
+    // tiết khí
+    // Mỗi tiết khí cách nhau 15 độ (360 / 24 = 15)
+    // Lập Xuân bắt đầu từ 315 độ
+    val solarTerm = (((l + 45.0) % 360.0) / 15.0).toInt()
+    return solarTerm to solarTermMonthChi
   }
 }
