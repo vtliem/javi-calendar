@@ -116,7 +116,7 @@ fun DayCell(
       )
     }
     // Line 2: Holiday
-    if (option.dayDetail.japaneseDate) {
+    if (option.month.japaneseDate) {
       dateInfo.japaneseHoliday?.let {
         Text(
             text = it,
@@ -131,7 +131,7 @@ fun DayCell(
     }
 
     // Line 3: Zodiac
-    if (option.dayDetail.zodiac == ZodiacDisplay.Full) {
+    if (option.month.zodiac == ZodiacDisplay.Full) {
       Text(
           text = dateInfo.lunarDate.zodiac.godName,
           fontSize = 8.sp,
@@ -140,7 +140,7 @@ fun DayCell(
       )
     }
 
-    if (option.dayDetail.observance) {
+    if (option.month.observance) {
       dateInfo.lunarDate.observance?.let {
         Text(
             text = it,
