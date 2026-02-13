@@ -58,18 +58,42 @@ enum class Zodiac(
     val isAuspicious: Boolean,
     val detail: String,
 ) {
-  ThanhLong("Thanh Long", true, "Mọi việc đều thuận lợi, trăm sự thành công."),
-  MinhDuong("Minh Đường", true, "Tốt cho việc khởi đầu, cầu quan tiến chức."),
-  ThienHinh("Thiên Hình", false, "Dễ gặp rắc rối pháp lý, kiện tụng."),
-  ChuTuoc("Chu Tước", false, "Đề phòng thị phi, cãi vã, tai tiếng."),
-  KimQuy("Kim Quỹ", true, "Rất tốt cho kinh doanh, cầu tài lộc."),
-  KimDuong("Bảo Quang", true, "Tốt cho xây dựng, nhà cửa, đi xa."),
-  BachHo("Bạch Hổ", false, "Kỵ đi xa, đề phòng tai nạn bất ngờ."),
-  NgocDuong("Ngọc Đường", true, "Được quý nhân giúp đỡ, vạn sự hanh thông."),
-  ThienLao("Thiên Lao", false, "Dễ bị đình trệ, kìm hãm, khó tiến triển."),
-  NguyenVu("Huyền Vũ", false, "Hao tốn tiền bạc, dễ bị mất trộm."),
-  TuMenh("Tư Mệnh", true, "Sức khỏe dồi dào, cát lành cho mọi việc."),
-  CauTran("Câu Trận", false, "Đề phòng tiểu nhân quấy phá, tranh chấp.");
+  ThanhLong("Thanh Long", true, "Tốt cho cưới hỏi, khai trương, thi cử và các việc hỷ sự."),
+  MinhDuong("Minh Đường", true, "Tốt cho nhập học, khai trương, nhậm chức, giao thương, động thổ."),
+  ThienHinh(
+      "Thiên Hình",
+      false,
+      "Rất xấu cho cưới hỏi, xây dựng, nhậm chức, nhập học, khai trương, mua xe, mua nhà.",
+  ),
+  ChuTuoc(
+      "Chu Tước",
+      false,
+      "Rất xấu cho khai trương, mở xưởng, nhập trạch và các việc cầu tài lộc.",
+  ),
+  KimQuy("Kim Quỹ", true, "Lý tưởng cho hôn sự, giao tiếp, thỏa thuận, hội họp và tranh biện."),
+  KimDuong("Bảo Quang", true, "Tốt cho khởi công, động thổ, khai trương, cưới hỏi, nhậm chức."),
+  BachHo(
+      "Bạch Hổ",
+      false,
+      "Rất xấu cho mọi việc, tối kỵ mai táng và các việc liên quan đến đất đai.",
+  ),
+  NgocDuong(
+      "Ngọc Đường",
+      true,
+      "Rất tốt cho thi cử, khai trương, động thổ, nhậm chức và phát triển tài năng.",
+  ),
+  ThienLao("Thiên Lao", false, "Xấu cho động thổ, nhập trạch, xuất hành, chữa bệnh, cưới hỏi."),
+  NguyenVu(
+      "Huyền Vũ",
+      false,
+      "Rất xấu cho cưới hỏi, làm nhà, nhập trạch, ký kết, khai trương, nhậm chức.",
+  ),
+  TuMenh("Tư Mệnh", true, "Rất tốt cho khai trương, động thổ, ký kết hợp đồng, cưới hỏi."),
+  CauTran(
+      "Câu Trận",
+      false,
+      "Rất xấu cho cưới hỏi, động thổ, đổ mái, xuất hành, tu tạo, tế tự, chữa bệnh.",
+  );
 
   val typeName
     get() = if (isAuspicious) "Hoàng Đạo" else "Hắc Đạo"
@@ -81,19 +105,111 @@ enum class Zodiac(
         lunarMonth: Int,
         julianDay: Int,
     ): Zodiac {
-      val startChiOfMonth =
-          when (lunarMonth % 6) {
-            1 -> 2 // Tháng 1 & 7: Thanh Long tại Dần
-            2 -> 4 // Tháng 2 & 8: Thanh Long tại Thìn
-            3 -> 6 // Tháng 3 & 9: Thanh Long tại Ngọ
-            4 -> 8 // Tháng 4 & 10: Thanh Long tại Thân
-            5 -> 10 // Tháng 5 & 11: Thanh Long tại Tuất
-            0 -> 0 // Tháng 6 & 12: Thanh Long tại Tý
-            else -> 0
-          }
+      val dayChi = Chi.ofDay(julianDay)
 
-      val godIndex = (Chi.ofDay(julianDay).ordinal - startChiOfMonth + 12) % 12
-      return entries[godIndex]
+      return when (lunarMonth) {
+        1,
+        7 ->
+            when (dayChi) {
+              Chi.Ty -> ThanhLong
+              Chi.Suu -> MinhDuong
+              Chi.Dan -> ThienHinh
+              Chi.Mao -> ChuTuoc
+              Chi.Thin -> KimQuy
+              Chi.Ty_ -> KimDuong
+              Chi.Ngo -> BachHo
+              Chi.Mui -> NgocDuong
+              Chi.Than -> ThienLao
+              Chi.Dau -> NguyenVu
+              Chi.Tuat -> TuMenh
+              Chi.Hoi -> CauTran
+            }
+
+        2,
+        8 ->
+            when (dayChi) {
+              Chi.Dan -> ThanhLong
+              Chi.Mao -> MinhDuong
+              Chi.Thin -> ThienHinh
+              Chi.Ty_ -> ChuTuoc
+              Chi.Ngo -> KimQuy
+              Chi.Mui -> KimDuong
+              Chi.Than -> BachHo
+              Chi.Dau -> NgocDuong
+              Chi.Tuat -> ThienLao
+              Chi.Hoi -> NguyenVu
+              Chi.Ty -> TuMenh
+              Chi.Suu -> CauTran
+            }
+
+        3,
+        9 ->
+            when (dayChi) {
+              Chi.Thin -> ThanhLong
+              Chi.Ty_ -> MinhDuong
+              Chi.Ngo -> ThienHinh
+              Chi.Mui -> ChuTuoc
+              Chi.Than -> KimQuy
+              Chi.Dau -> KimDuong
+              Chi.Tuat -> BachHo
+              Chi.Hoi -> NgocDuong
+              Chi.Ty -> ThienLao
+              Chi.Suu -> NguyenVu
+              Chi.Dan -> TuMenh
+              Chi.Mao -> CauTran
+            }
+
+        4,
+        10 ->
+            when (dayChi) {
+              Chi.Ngo -> ThanhLong
+              Chi.Mui -> MinhDuong
+              Chi.Than -> ThienHinh
+              Chi.Dau -> ChuTuoc
+              Chi.Tuat -> KimQuy
+              Chi.Hoi -> KimDuong
+              Chi.Ty -> BachHo
+              Chi.Suu -> NgocDuong
+              Chi.Dan -> ThienLao
+              Chi.Mao -> NguyenVu
+              Chi.Thin -> TuMenh
+              Chi.Ty_ -> CauTran
+            }
+
+        5,
+        11 ->
+            when (dayChi) {
+              Chi.Than -> ThanhLong
+              Chi.Dau -> MinhDuong
+              Chi.Tuat -> ThienHinh
+              Chi.Hoi -> ChuTuoc
+              Chi.Ty -> KimQuy
+              Chi.Suu -> KimDuong
+              Chi.Dan -> BachHo
+              Chi.Mao -> NgocDuong
+              Chi.Thin -> ThienLao
+              Chi.Ty_ -> NguyenVu
+              Chi.Ngo -> TuMenh
+              Chi.Mui -> CauTran
+            }
+        6,
+        12 ->
+            when (dayChi) {
+              Chi.Tuat -> ThanhLong
+              Chi.Hoi -> MinhDuong
+              Chi.Ty -> ThienHinh
+              Chi.Suu -> ChuTuoc
+              Chi.Dan -> KimQuy
+              Chi.Mao -> KimDuong
+              Chi.Thin -> BachHo
+              Chi.Ty_ -> NgocDuong
+              Chi.Ngo -> ThienLao
+              Chi.Mui -> NguyenVu
+              Chi.Than -> TuMenh
+              Chi.Dau -> CauTran
+            }
+        else -> ThanhLong // Trường hợp dự phòng, mặc dù lunarMonth thường từ 1-12
+      }
     }
   }
 }
