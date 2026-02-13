@@ -176,17 +176,15 @@ data class LunarYear(
 }
 
 data class LunarDate(
-    val lunarYear: Int,
-    val lunarMonth: Int,
-    val lunarDay: Int,
+    private val lunarYear: Int,
+    private val lunarMonth: Int,
+    private val lunarDay: Int,
     val isLunarLeap: Boolean,
     val julianDay: Int,
 ) {
   val year by lazy {
     LunarYear(lunarYear, Can.ofYear(lunarYear), Chi.ofYear(lunarYear), isLunarLeap)
   }
-  val yearCanChi
-    get() = "${year.can} ${year.chi}"
 
   val month by lazy {
     LunarMonth(lunarMonth, Can.ofMonth(lunarMonth, lunarYear), Chi.ofMonth(lunarMonth))
