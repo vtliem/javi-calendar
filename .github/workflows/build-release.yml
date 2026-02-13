@@ -6,42 +6,42 @@ on:
       - 'v*'
 
 jobs:
-  build:
+  build-and-release:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write # Required to upload assets and create releases
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Fetch all history for accurate changelog generation
+          fetch-depth: 0 # Important: fetch all history for the changelog
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
-          cache: 'gradle'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
       - name: Generate Version Code
-        # Calculates minutes elapsed since 2026-02-13 12:00:00 UTC
+        # Calculates a unique version code based on the current timestamp
         run: |
           NOW=$(date +%s)
-          START_DATE=1770951167
+          START_DATE=1770957630
           VERSION_CODE=$(( ($NOW - $START_DATE) / 60 ))
           echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
 
       - name: Decode Keystore
-        # Decodes the Base64 secret into a physical .jks file for the build process
-        run: |
-          echo "${{ secrets.SIGNING_KEY_BASE64 }}" | base64 --decode > app/vtl-android-keystore.jks
+        # Decodes your Base64 secret into the physical .jks file
+        run: echo "${{ secrets.SIGNING_KEY_BASE64 }}" | base64 --decode > app/vtl-android-keystore.jks
 
       - name: Build Signed APK
-        # Injecting versioning and signing info via command line arguments
         run: |
           ./gradlew assembleRelease \
             -Pandroid.injected.versionCode=${{ env.VERSION_CODE }} \
@@ -53,27 +53,47 @@ jobs:
           MYAPP_RELEASE_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           MYAPP_RELEASE_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
-      - name: Prepare Artifact
+      - name: Prepare Artifacts
         run: |
           mkdir -p release-artifacts
-          cp app/build/outputs/apk/release/app-release.apk release-artifacts/JaviCalendar_${{ github.ref_name }}.apk
+          APK_NAME="JaviCalendar_${{ github.ref_name }}.apk"
+          QR_NAME="JaviCalendar_${{ github.ref_name }}_qrcode.png"
+          
+          # Move APK
+          cp app/build/outputs/apk/release/app-release.apk release-artifacts/$APK_NAME
+          
+          # Generate QR Code using a public API (goqr.me)
+          # The URL points to the future GitHub Release download link
+          APK_DOWNLOAD_URL="${{ github.server_url }}/${{ github.repository }}/releases/download/${{ github.ref_name }}/$APK_NAME"
+          echo "Generating QR for: $APK_DOWNLOAD_URL"
+          
+          curl -s "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=$(echo -n "$APK_DOWNLOAD_URL" | jq -sRr @uri)" -o release-artifacts/$QR_NAME
+          
+          # Save filenames for the next step
+          echo "APK_FILENAME=$APK_NAME" >> $GITHUB_ENV
+          echo "QR_FILENAME=$QR_NAME" >> $GITHUB_ENV
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: release-artifacts/JaviCalendar_${{ github.ref_name }}.apk
+          files: |
+            release-artifacts/${{ env.APK_FILENAME }}
+            release-artifacts/${{ env.QR_FILENAME }}
           tag_name: ${{ github.ref }}
           name: Release ${{ github.ref_name }}
-          generate_release_notes: true # Automatically generates the changelog from commits
+          generate_release_notes: true # Automatically generates the "What's Changed" section
           draft: false
           prerelease: false
           body: |
             ### 🚀 Build Information
             - **Application:** JaviCalendar
-            - **Version Name:** ${{ github.ref_name }}
-            - **Version Code:** ${{ env.VERSION_CODE }}
+            - **Version:** ${{ github.ref_name }} (Build ${{ env.VERSION_CODE }})
             - **Build Date:** $(date +'%Y-%m-%d %H:%M:%S')
             
-            *The automated changelog is generated below.*
+            ---
+            ### 📲 Direct Download (Scan me!)
+            <img src="${{ github.server_url }}/${{ github.repository }}/releases/download/${{ github.ref_name }}/${{ env.QR_FILENAME }}" width="250" alt="APK QR Code" />
+            
+            *Scan this QR code with your phone to download the APK directly.*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
