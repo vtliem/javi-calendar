@@ -102,15 +102,13 @@ enum class Zodiac(
 
   companion object {
     fun of(
-        lunarMonth: Int,
-        julianDay: Int,
+        month: LunarMonth,
+        day: LunarDay,
     ): Zodiac {
-      val dayChi = Chi.ofDay(julianDay)
-
-      return when (lunarMonth) {
+      return when (month.value) {
         1,
         7 ->
-            when (dayChi) {
+            when (day.chi) {
               Chi.Ty -> ThanhLong
               Chi.Suu -> MinhDuong
               Chi.Dan -> ThienHinh
@@ -127,7 +125,7 @@ enum class Zodiac(
 
         2,
         8 ->
-            when (dayChi) {
+            when (day.chi) {
               Chi.Dan -> ThanhLong
               Chi.Mao -> MinhDuong
               Chi.Thin -> ThienHinh
@@ -144,7 +142,7 @@ enum class Zodiac(
 
         3,
         9 ->
-            when (dayChi) {
+            when (day.chi) {
               Chi.Thin -> ThanhLong
               Chi.Ty_ -> MinhDuong
               Chi.Ngo -> ThienHinh
@@ -161,7 +159,7 @@ enum class Zodiac(
 
         4,
         10 ->
-            when (dayChi) {
+            when (day.chi) {
               Chi.Ngo -> ThanhLong
               Chi.Mui -> MinhDuong
               Chi.Than -> ThienHinh
@@ -178,7 +176,7 @@ enum class Zodiac(
 
         5,
         11 ->
-            when (dayChi) {
+            when (day.chi) {
               Chi.Than -> ThanhLong
               Chi.Dau -> MinhDuong
               Chi.Tuat -> ThienHinh
@@ -194,7 +192,7 @@ enum class Zodiac(
             }
         6,
         12 ->
-            when (dayChi) {
+            when (day.chi) {
               Chi.Tuat -> ThanhLong
               Chi.Hoi -> MinhDuong
               Chi.Ty -> ThienHinh
@@ -208,7 +206,7 @@ enum class Zodiac(
               Chi.Than -> TuMenh
               Chi.Dau -> CauTran
             }
-        else -> ThanhLong // Trường hợp dự phòng, mặc dù lunarMonth thường từ 1-12
+        else -> ThanhLong
       }
     }
   }
@@ -240,8 +238,8 @@ private val AuspiciousHoursList: List<List<Boolean>> =
         )
         .map { row -> row.map { it == '1' } }
 
-private fun calcAuspiciousHours(julianDay: Int): List<String> =
-    AuspiciousHoursList[Chi.ofDay(julianDay).ordinal % 6].withIndex()
+private fun calcAuspiciousHours(day: LunarDay): List<String> =
+    AuspiciousHoursList[day.chi.ordinal % 6].withIndex()
         .filter { it.value }
         .map { (i, _) ->
           "${Chi.entries[i].displayName} (${(i * 2 + 23) % 24}-${(i * 2 + 1) % 24}h)"
@@ -310,9 +308,12 @@ data class LunarDate(
     LunarMonth(lunarMonth, Can.ofMonth(lunarMonth, lunarYear), Chi.ofMonth(lunarMonth), isLeapMonth)
   }
   val day by lazy { LunarDay(lunarDay, Can.ofDay(julianDay), Chi.ofDay(julianDay)) }
-  val observance by lazy { LunarObservances["$lunarDay/$lunarMonth"] }
-  val zodiac by lazy { Zodiac.of(lunarMonth, julianDay) }
-  val auspiciousHours by lazy {
-    "Giờ Hoàng Đạo: ${calcAuspiciousHours(julianDay).joinToString(", ")}"
-  }
+  val observance
+    get() = LunarObservances["$lunarDay/$lunarMonth"]
+
+  val zodiac
+    get() = Zodiac.of(month, day)
+
+  val auspiciousHours
+    get() = "Giờ Hoàng Đạo: ${calcAuspiciousHours(day).joinToString(", ")}"
 }
