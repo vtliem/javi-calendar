@@ -159,7 +159,7 @@ fun DayCell(
     // Line 3: Zodiac
     if (option.month.zodiac == ZodiacDisplay.Full && lunarDate != null) {
       Text(
-          text = lunarDate.zodiac.godName,
+          text = lunarDate.zodiac.zodiacName,
           fontSize = 8.sp,
           color = lunarDate.zodiac.color ?: MaterialTheme.colorScheme.onSurface,
           maxLines = 1,

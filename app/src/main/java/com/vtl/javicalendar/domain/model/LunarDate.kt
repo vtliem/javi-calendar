@@ -54,7 +54,7 @@ enum class Chi(val displayName: String) {
 }
 
 enum class Zodiac(
-    val godName: String,
+    val zodiacName: String,
     val isAuspicious: Boolean,
     val detail: String,
 ) {
@@ -63,18 +63,18 @@ enum class Zodiac(
   ThienHinh("Thiên Hình", false, "Dễ gặp rắc rối pháp lý, kiện tụng."),
   ChuTuoc("Chu Tước", false, "Đề phòng thị phi, cãi vã, tai tiếng."),
   KimQuy("Kim Quỹ", true, "Rất tốt cho kinh doanh, cầu tài lộc."),
-  KimDuong("Kim Đường", true, "Tốt cho xây dựng, nhà cửa, đi xa."),
+  KimDuong("Bảo Quang", true, "Tốt cho xây dựng, nhà cửa, đi xa."),
   BachHo("Bạch Hổ", false, "Kỵ đi xa, đề phòng tai nạn bất ngờ."),
   NgocDuong("Ngọc Đường", true, "Được quý nhân giúp đỡ, vạn sự hanh thông."),
   ThienLao("Thiên Lao", false, "Dễ bị đình trệ, kìm hãm, khó tiến triển."),
-  NguyenVu("Nguyên Vũ", false, "Hao tốn tiền bạc, dễ bị mất trộm."),
+  NguyenVu("Huyền Vũ", false, "Hao tốn tiền bạc, dễ bị mất trộm."),
   TuMenh("Tư Mệnh", true, "Sức khỏe dồi dào, cát lành cho mọi việc."),
   CauTran("Câu Trận", false, "Đề phòng tiểu nhân quấy phá, tranh chấp.");
 
   val typeName
-    get() = if (isAuspicious) "Ngày Hoàng Đạo" else "Ngày Hắc Đạo"
+    get() = if (isAuspicious) "Hoàng Đạo" else "Hắc Đạo"
 
-  override fun toString() = "$typeName: $godName"
+  override fun toString() = "$zodiacName $typeName"
 
   companion object {
     fun of(

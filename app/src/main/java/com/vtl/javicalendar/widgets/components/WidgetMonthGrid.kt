@@ -125,7 +125,7 @@ private fun RowScope.WidgetDayCell(dateInfo: DateInfo, option: Option) {
     // Line 3: Zodiac
     if (option.month.zodiac == ZodiacDisplay.Full) {
       Text(
-          text = dateInfo.lunarDate.zodiac.godName,
+          text = dateInfo.lunarDate.zodiac.zodiacName,
           style =
               TextStyle(
                   fontSize = 8.sp,
