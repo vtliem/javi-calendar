@@ -100,7 +100,7 @@ fun DayDetailsSection(
     Spacer(modifier = Modifier.height(8.dp))
 
     if (option.dayDetail.japaneseDate) {
-      dateInfo.japaneseHoliday?.let {
+      dateInfo.japaneseLongHoliday?.let {
         Text(
             text = it,
             style = MaterialTheme.typography.bodyLarge,

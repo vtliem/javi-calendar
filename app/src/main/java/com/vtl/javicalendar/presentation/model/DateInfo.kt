@@ -23,6 +23,7 @@ data class DateInfo(
     // Original date value for handling clicks and logic
     val value: LocalDate,
     val japaneseHoliday: String?,
+    val japaneseLongHoliday: String?,
     val hasHolidayDataForOfYear: Boolean,
     val isToday: Boolean,
     val isSelected: Boolean,

@@ -1,8 +1,6 @@
 package com.vtl.javicalendar.data.datasource
 
 import android.util.Log
-import java.io.BufferedReader
-import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.charset.Charset
@@ -89,11 +87,11 @@ class HolidayRemoteDataSource {
         val newLastModified = connection.lastModified
         Log.v(TAG, "Fetched new data. Last-Modified: $newLastModified")
 
-        val inputStream = connection.inputStream
         // The official Japanese government CSV is Shift-JIS encoded
-        val reader = BufferedReader(InputStreamReader(inputStream, Charset.forName("Shift-JIS")))
-        val content = reader.use { it.readText() }
-
+        val content =
+            connection.inputStream.bufferedReader(Charset.forName("Shift-JIS")).use {
+              it.readText()
+            }
         HolidayData(newLastModified, content)
       } else {
         Log.e(TAG, "Failed to fetch data: ${connection.responseCode} ${connection.responseMessage}")
