@@ -3,6 +3,7 @@ package com.vtl.javicalendar.domain
 import com.vtl.javicalendar.domain.model.JapaneseHolidays
 import com.vtl.javicalendar.presentation.model.DateInfo
 import com.vtl.javicalendar.presentation.model.MonthInfo
+import com.vtl.javicalendar.utils.JapaneseHolidayUtils
 import java.time.DayOfWeek
 import java.time.LocalDate
 
@@ -56,12 +57,20 @@ object CalendarFactory {
       today: LocalDate,
   ): DateInfo {
     // Get Japanese holiday
-    val japaneseHoliday = holidays.getHoliday(date.year, date.monthValue, date.dayOfMonth)
+    val japaneseHoliday = holidays.getHoliday(date)
+    val japaneseLongHoliday = JapaneseHolidayUtils.getLongNameForHoliday(japaneseHoliday, date)
 
     // Determine states
     val isToday = date == today
     val isSelected = date == selectedDate
 
-    return DateInfo(date, japaneseHoliday, holidays.hasData(date.year), isToday, isSelected)
+    return DateInfo(
+        value = date,
+        japaneseHoliday = japaneseHoliday ?: JapaneseHolidayUtils.getHolidayName(date),
+        japaneseLongHoliday = japaneseLongHoliday,
+        hasHolidayDataForOfYear = holidays.hasData(date.year),
+        isToday = isToday,
+        isSelected = isSelected,
+    )
   }
 }

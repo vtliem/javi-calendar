@@ -16,7 +16,7 @@ class HolidayUseCase(
     private const val REFRESH_INTERVAL = 1000 * 60 * 60 * 24
   }
 
-  private val _holidays = MutableStateFlow(JapaneseHolidays(emptyMap()))
+  private val _holidays = MutableStateFlow(JapaneseHolidays())
   private val holidays: StateFlow<JapaneseHolidays> = _holidays.asStateFlow()
 
   operator fun invoke() = holidays

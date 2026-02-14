@@ -96,7 +96,7 @@ fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
     }
 
     if (option.dayDetail.japaneseDate) {
-      dateInfo.japaneseHoliday?.let {
+      dateInfo.japaneseLongHoliday?.let {
         Spacer(modifier = GlanceModifier.height(2.dp))
         Text(
             text = it,
