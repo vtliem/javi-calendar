@@ -17,6 +17,7 @@ fun CalendarBottomSheet(
     onYearSelected: (Int) -> Unit,
     onMonthSelected: (Int) -> Unit,
     onOptionChanged: (Option) -> Unit,
+    onSyncClick: () -> Unit,
 ) {
   ModalBottomSheet(
       onDismissRequest = onDismissRequest,
@@ -42,6 +43,8 @@ fun CalendarBottomSheet(
           SettingsSection(
               option = uiState.option,
               onOptionChanged = onOptionChanged,
+              holidays = uiState.holidays,
+              onSyncClick = onSyncClick,
           )
         }
         else -> {}

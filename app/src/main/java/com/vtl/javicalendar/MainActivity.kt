@@ -42,12 +42,20 @@ class MainActivity : ComponentActivity() {
             floatingActionButton = {
               Column(horizontalAlignment = Alignment.End) {
                 if (uiState.viewMode == ViewMode.CALENDAR) {
-                  FloatingActionButton(
-                      onClick = { vm.setViewMode(ViewMode.SETTINGS) },
-                      containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                      modifier = Modifier.padding(bottom = 8.dp),
-                  ) {
-                    Icon(Icons.Default.Settings, contentDescription = "Settings")
+                  Box(contentAlignment = Alignment.TopEnd) {
+                    FloatingActionButton(
+                        onClick = { vm.setViewMode(ViewMode.SETTINGS) },
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        modifier = Modifier.padding(bottom = 8.dp),
+                    ) {
+                      Icon(Icons.Default.Settings, contentDescription = "Settings")
+                    }
+                    uiState.holidays.error?.let {
+                      HolidayErrorIndicator(
+                          error = it,
+                          modifier = Modifier.padding(top = 4.dp, end = 4.dp),
+                      )
+                    }
                   }
                 }
 
@@ -80,6 +88,7 @@ class MainActivity : ComponentActivity() {
                   onYearSelected = { vm.changeYear(it) },
                   onMonthSelected = { vm.changeMonth(it) },
                   onOptionChanged = { vm.updateOption(it) },
+                  onSyncClick = { vm.syncJapaneseHolidays() },
               )
             }
           }

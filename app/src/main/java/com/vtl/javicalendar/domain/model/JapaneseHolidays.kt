@@ -1,5 +1,6 @@
 package com.vtl.javicalendar.domain.model
 
+import com.vtl.javicalendar.data.datasource.HolidayErrorType
 import java.time.LocalDate
 import kotlinx.serialization.Serializable
 
@@ -8,6 +9,9 @@ data class JapaneseHolidays(
     private val holidayMap: Map<Int, String> = emptyMap(),
     private val minYear: Int = 0,
     private val maxYear: Int = 0,
+    val lastModified: Long = 0,
+    val lastSuccess: Long = 0,
+    val error: HolidayErrorType? = null,
 ) {
 
   fun getHoliday(date: LocalDate): String? {
@@ -30,7 +34,12 @@ data class JapaneseHolidays(
       return key(year, month, day)
     }
 
-    fun parseHolidays(csv: String) =
+    fun parseHolidays(
+        csv: String,
+        lastModified: Long = 0,
+        lastSuccess: Long = 0,
+        error: HolidayErrorType? = null,
+    ) =
         csv.lineSequence()
             .mapNotNull {
               val parts = it.split(",")
@@ -47,7 +56,14 @@ data class JapaneseHolidays(
                 minKey = minOf(minKey, key)
                 maxKey = maxOf(maxKey, key)
               }
-              JapaneseHolidays(map, minKey / 10000, maxKey / 10000)
+              JapaneseHolidays(
+                  holidayMap = map,
+                  minYear = minKey / 10000,
+                  maxYear = maxKey / 10000,
+                  lastModified = lastModified,
+                  lastSuccess = lastSuccess,
+                  error = error,
+              )
             }
   }
 }

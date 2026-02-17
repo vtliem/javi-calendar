@@ -12,4 +12,16 @@
     <string name="zodiac_display_full">Đầy đủ</string>
     <string name="zodiac_display_color">Theo màu sắc</string>
     <string name="zodiac_display_none">Không hiển thị</string>
+    <string name="error_network">Lỗi mạng khi tải dữ liệu ngày lễ</string>
+    <string name="error_generic">Lỗi tải dữ liệu ngày lễ: %1$s</string>
+    <string name="settings_holiday_sync_title">Đồng bộ dữ liệu ngày lễ</string>
+    <string name="settings_holiday_source">Nguồn dữ liệu</string>
+    <string name="settings_holiday_about">Thông tin dữ liệu</string>
+    <string name="settings_holiday_sync_button">Đồng bộ dữ liệu</string>
+    <string name="settings_holiday_updated_at">Cập nhật lúc: %1$s</string>
+    <string name="settings_holiday_last_synced">Đồng bộ lần cuối: %1$s</string>
+    <string name="settings_holiday_not_available">N/A</string>
+    <string name="settings_holiday_error_prefix">Lỗi: %1$s</string>
+    <string name="settings_holiday_no_data_note_template">Lưu ý: Nếu không có dữ liệu chính thức cho một năm, năm đó sẽ được hiển thị bằng %1$s (ví dụ: %2$s).</string>
+    <string name="settings_holiday_orange_word">màu cam</string>
 </resources>

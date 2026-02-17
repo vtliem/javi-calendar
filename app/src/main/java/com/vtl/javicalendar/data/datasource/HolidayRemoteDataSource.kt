@@ -1,105 +1,113 @@
 package com.vtl.javicalendar.data.datasource
 
-import android.util.Log
+import java.io.IOException
 import java.net.HttpURLConnection
-import java.net.URL
+import java.net.URI
 import java.nio.charset.Charset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class HolidayRemoteDataSource {
   companion object {
-    // https://www8.cao.go.jp/chosei/shukujitsu/gaiyou.html
-    private const val CSV_URL = "https://www8.cao.go.jp/chosei/shukujitsu/syukujitsu.csv"
-    private const val TAG = "HolidayRemoteDataSource"
+    const val INFO_URL = "https://www8.cao.go.jp/chosei/shukujitsu/gaiyou.html"
+    const val CSV_URL = "https://www8.cao.go.jp/chosei/shukujitsu/syukujitsu.csv"
+
+    /**
+     * request japanese holiday csv data
+     *
+     * @param method `GET` or `HEAD`
+     * @param onProcess
+     *     - lastModified: Long
+     *     - content: () -> String use to read response body, should call inside onProcess block
+     *
+     * @throws FetchHolidayError
+     */
+    private inline fun <reified R> request(
+        method: String,
+        timeout: Int,
+        onProcess: (lastModified: Long, content: () -> String) -> R,
+    ): R {
+      val connection =
+          (URI(CSV_URL).toURL().openConnection() as HttpURLConnection).apply {
+            requestMethod = method
+            connectTimeout = timeout
+            readTimeout = timeout
+          }
+
+      try {
+        val responseCode =
+            try {
+              connection.responseCode
+            } catch (e: IOException) {
+              throw FetchHolidayError.NetworkError(e)
+            } catch (e: Exception) {
+              throw FetchHolidayError.UnknownError(e)
+            }
+
+        when {
+          responseCode <= 0 -> {
+            throw FetchHolidayError.NetworkError(IOException("Invalid response from server"))
+          }
+
+          responseCode == HttpURLConnection.HTTP_OK -> {
+            return onProcess(connection.lastModified) {
+              connection.inputStream.bufferedReader(Charset.forName("Shift-JIS")).use {
+                it.readText()
+              }
+            }
+          }
+
+          else -> {
+            throw FetchHolidayError.ServerError(responseCode, connection.responseMessage)
+          }
+        }
+      } finally {
+        runCatching {
+          // ignore error
+          connection.disconnect()
+        }
+      }
+    }
   }
 
   /**
-   * Fetches holiday data if it has changed since the last fetch. Returns null if data is up to date
-   * or if an error occurs.
+   * Fetch Japanese Holiday csv data from [HolidayRemoteDataSource.CSV_URL]
+   *
+   * @return
+   * - null: No updated need (data unchanged from last update)
+   * - HolidayData: Updated data
+   *
+   * @throws FetchHolidayError
    */
   suspend fun fetch(lastModified: Long): HolidayData? =
-      withContext(Dispatchers.IO) {
-        try {
-          if (detectChanges(lastModified)) {
-            fetchNewData(lastModified)
-          } else {
-            null
-          }
-        } catch (e: Exception) {
-          Log.e(TAG, "Failed to fetch data", e)
-          null
-        }
-      }
+      withContext(Dispatchers.IO) { fetchSync(lastModified) }
+
+  fun fetchSync(lastModified: Long): HolidayData? {
+    return if (detectChanges(lastModified)) {
+      fetchNewData(lastModified)
+    } else {
+      null
+    }
+  }
 
   /** Checks if the remote data has changed using a HEAD request. */
   private fun detectChanges(lastModified: Long): Boolean {
     if (lastModified == 0L) return true
-
-    val timeout = 10_000 // 10 seconds for refresh check
-    return try {
-      val url = URL(CSV_URL)
-      val connection = url.openConnection() as HttpURLConnection
-      connection.apply {
-        requestMethod = "HEAD"
-        connectTimeout = timeout
-        readTimeout = timeout
-        ifModifiedSince = lastModified
-        connect()
-      }
-
-      val responseCode = connection.responseCode
-      val serverLastModified = connection.lastModified
-
-      val noUpdate =
-          responseCode == HttpURLConnection.HTTP_NOT_MODIFIED ||
-              (serverLastModified in 1..lastModified)
-
-      if (noUpdate) {
-        Log.v(TAG, "No update needed (Last-Modified: $lastModified)")
-        false
-      } else {
-        true
-      }
-    } catch (e: Exception) {
-      Log.w(TAG, "Failed to check Last-Modified, attempting full fetch: ${e.message}")
-      true // Fallback to fetching if check fails
+    // 10 seconds for refresh check
+    return request("HEAD", 10_000) { remoteLastModified, _ ->
+      remoteLastModified == 0L || remoteLastModified != lastModified
     }
   }
 
   /** Downloads the new CSV content. */
-  private fun fetchNewData(lastModified: Long): HolidayData? {
+  private fun fetchNewData(lastModified: Long): HolidayData {
     val timeout = if (lastModified == 0L) 300_000 else 10_000 // 5 mins for initial, 10s for refresh
-    return try {
-      val url = URL(CSV_URL)
-      val connection = url.openConnection() as HttpURLConnection
-      connection.apply {
-        requestMethod = "GET"
-        connectTimeout = timeout
-        readTimeout = timeout
-        if (lastModified > 0) {
-          ifModifiedSince = lastModified
-        }
-        connect()
+    return request("GET", timeout) { remoteLastModified, content ->
+      val csv = content().trim()
+      if (csv.isEmpty()) {
+        throw FetchHolidayError.ServerError(HttpURLConnection.HTTP_OK, "Empty response")
       }
-
-      if (connection.responseCode == HttpURLConnection.HTTP_OK) {
-        val newLastModified = connection.lastModified
-        Log.v(TAG, "Fetched new data. Last-Modified: $newLastModified")
-
-        // The official Japanese government CSV is Shift-JIS encoded
-        val content =
-            connection.inputStream.bufferedReader(Charset.forName("Shift-JIS")).use {
-              it.readText()
-            }
-        HolidayData(newLastModified, content)
-      } else {
-        Log.e(TAG, "Failed to fetch data: ${connection.responseCode} ${connection.responseMessage}")
-        null
-      }
-    } catch (e: Exception) {
-      Log.e(TAG, "Error during fetchNewData", e)
-      null
+      HolidayData(remoteLastModified, csv)
     }
   }
 }

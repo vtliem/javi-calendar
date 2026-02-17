@@ -78,7 +78,10 @@ class CalendarViewModel(
           )
 
   init {
-    // Initial load
+    syncJapaneseHolidays()
+  }
+
+  fun syncJapaneseHolidays() {
     viewModelScope.launch {
       calendarSourcesUseCase().collectLatest { sources -> refreshWidget(sources) }
       _internalState.update { it.copy(isLoading = true) }
