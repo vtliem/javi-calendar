@@ -1,10 +1,8 @@
 package com.vtl.javicalendar.utils
 
+import com.vtl.javicalendar.data.datasource.HolidayRemoteDataSource
 import com.vtl.javicalendar.domain.model.JapaneseHolidays.Companion.parseHolidays
 import com.vtl.javicalendar.presentation.model.DateInfo.Companion.japaneseYear
-import java.net.HttpURLConnection
-import java.net.URL
-import java.nio.charset.Charset
 import java.time.LocalDate
 import java.time.Month
 import java.time.format.DateTimeFormatter
@@ -15,19 +13,7 @@ class JapaneseHolidayUtilsTest {
 
   companion object {
     private val expectedData by lazy {
-      val url = "https://www8.cao.go.jp/chosei/shukujitsu/syukujitsu.csv"
-      (URL(url).openConnection() as HttpURLConnection)
-          .apply {
-            requestMethod = "GET"
-            connectTimeout = 5_000
-            readTimeout = 5_000
-            connect()
-          }
-          .let {
-            it.inputStream.bufferedReader(Charset.forName("Shift-JIS")).use { reader ->
-              parseHolidays(reader.readText())
-            }
-          }
+      parseHolidays(HolidayRemoteDataSource().fetchSync(0L)!!.content)
     }
     private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd(E)")
   }

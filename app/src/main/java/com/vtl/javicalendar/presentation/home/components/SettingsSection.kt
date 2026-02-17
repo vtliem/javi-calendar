@@ -4,19 +4,41 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.vtl.javicalendar.R
+import com.vtl.javicalendar.data.datasource.HolidayRemoteDataSource
+import com.vtl.javicalendar.domain.model.JapaneseHolidays
 import com.vtl.javicalendar.presentation.model.Option
 import com.vtl.javicalendar.presentation.model.ZodiacDisplay
+import com.vtl.javicalendar.presentation.theme.NoDataJapaneseYear
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @Composable
-fun SettingsSection(option: Option, onOptionChanged: (Option) -> Unit) {
+fun SettingsSection(
+    option: Option,
+    holidays: JapaneseHolidays,
+    onOptionChanged: (Option) -> Unit,
+    onSyncClick: () -> Unit,
+) {
+  val uriHandler = LocalUriHandler.current
+
   Column(modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState())) {
     Text(
         text = stringResource(R.string.settings_title),
@@ -123,6 +145,142 @@ fun SettingsSection(option: Option, onOptionChanged: (Option) -> Unit) {
             enabled = option.month.lunarDate,
         )
       }
+    }
+
+    Spacer(modifier = Modifier.height(32.dp))
+
+    // Holiday Data Sync Section
+    Text(
+        text = stringResource(R.string.settings_holiday_sync_title),
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.padding(bottom = 4.dp),
+    )
+
+    val noteTemplate = stringResource(R.string.settings_holiday_no_data_note_template)
+    val orangeWord = stringResource(R.string.settings_holiday_orange_word)
+    val exampleYear = "2026"
+
+    val annotatedNote =
+        remember(noteTemplate, orangeWord, exampleYear) {
+          buildAnnotatedString {
+            val orangeIndex = noteTemplate.indexOf("%1\$s")
+            val yearIndex = noteTemplate.indexOf("%2\$s")
+
+            if (orangeIndex != -1 && yearIndex != -1) {
+              if (orangeIndex < yearIndex) {
+                append(noteTemplate.substring(0, orangeIndex))
+                withStyle(SpanStyle(color = NoDataJapaneseYear, fontWeight = FontWeight.Bold)) {
+                  append(orangeWord)
+                }
+                append(noteTemplate.substring(orangeIndex + 4, yearIndex))
+                withStyle(SpanStyle(color = NoDataJapaneseYear, fontWeight = FontWeight.Bold)) {
+                  append(exampleYear)
+                }
+                append(noteTemplate.substring(yearIndex + 4))
+              } else {
+                append(noteTemplate.substring(0, yearIndex))
+                withStyle(SpanStyle(color = NoDataJapaneseYear, fontWeight = FontWeight.Bold)) {
+                  append(exampleYear)
+                }
+                append(noteTemplate.substring(yearIndex + 4, orangeIndex))
+                withStyle(SpanStyle(color = NoDataJapaneseYear, fontWeight = FontWeight.Bold)) {
+                  append(orangeWord)
+                }
+                append(noteTemplate.substring(orangeIndex + 4))
+              }
+            } else {
+              append(noteTemplate.replace("%1\$s", orangeWord).replace("%2\$s", exampleYear))
+            }
+          }
+        }
+
+    Text(
+        text = annotatedNote,
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(bottom = 8.dp),
+    )
+
+    // line 1: [Data Source] sync button [space] [About data]
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+      Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = stringResource(R.string.settings_holiday_source),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.primary,
+            textDecoration = TextDecoration.Underline,
+            modifier = Modifier.clickable { uriHandler.openUri(HolidayRemoteDataSource.CSV_URL) },
+        )
+        IconButton(onClick = onSyncClick, modifier = Modifier.size(32.dp)) {
+          Icon(
+              Icons.Default.Sync,
+              contentDescription = stringResource(R.string.settings_holiday_sync_button),
+              modifier = Modifier.size(18.dp),
+          )
+        }
+      }
+      TextButton(
+          onClick = { uriHandler.openUri(HolidayRemoteDataSource.INFO_URL) },
+          contentPadding = PaddingValues(0.dp),
+      ) {
+        Text(
+            text = stringResource(R.string.settings_holiday_about),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Icon(
+            Icons.AutoMirrored.Filled.OpenInNew,
+            contentDescription = null,
+            modifier = Modifier.size(14.dp).padding(start = 4.dp),
+        )
+      }
+    }
+
+    val formatter = remember {
+      DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
+    }
+
+    // line 2: Updated At:xxx [space] Last Synced at:xxx
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+      Text(
+          text =
+              stringResource(
+                  R.string.settings_holiday_updated_at,
+                  if (holidays.lastModified > 0)
+                      formatter.format(Instant.ofEpochMilli(holidays.lastModified))
+                  else stringResource(R.string.settings_holiday_not_available),
+              ),
+          style = MaterialTheme.typography.labelSmall,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+      )
+      Text(
+          text =
+              stringResource(
+                  R.string.settings_holiday_last_synced,
+                  if (holidays.lastSuccess > 0)
+                      formatter.format(Instant.ofEpochMilli(holidays.lastSuccess))
+                  else stringResource(R.string.settings_holiday_not_available),
+              ),
+          style = MaterialTheme.typography.labelSmall,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+      )
+    }
+
+    // error if has
+    holidays.error?.let { error ->
+      Text(
+          text = stringResource(R.string.settings_holiday_error_prefix, error.name),
+          style = MaterialTheme.typography.labelSmall,
+          color = MaterialTheme.colorScheme.error,
+          modifier = Modifier.padding(top = 4.dp),
+      )
     }
   }
 }

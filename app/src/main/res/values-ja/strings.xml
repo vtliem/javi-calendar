@@ -12,4 +12,16 @@
     <string name="zodiac_display_full">フル</string>
     <string name="zodiac_display_color">色で表示</string>
     <string name="zodiac_display_none">非表示</string>
+    <string name="error_network">祝日データの取得中にネットワークエラーが発生しました</string>
+    <string name="error_generic">祝日データの読み込みエラー: %1$s</string>
+    <string name="settings_holiday_sync_title">祝日データの同期</string>
+    <string name="settings_holiday_source">データソース</string>
+    <string name="settings_holiday_about">データについて</string>
+    <string name="settings_holiday_sync_button">データを同期</string>
+    <string name="settings_holiday_updated_at">更新日時: %1$s</string>
+    <string name="settings_holiday_last_synced">最終同期: %1$s</string>
+    <string name="settings_holiday_not_available">N/A</string>
+    <string name="settings_holiday_error_prefix">エラー: %1$s</string>
+    <string name="settings_holiday_no_data_note_template">注意：ある年の公式データがない場合、その年は %1$s で表示されます（例： %2$s）。</string>
+    <string name="settings_holiday_orange_word">オレンジ色</string>
 </resources>

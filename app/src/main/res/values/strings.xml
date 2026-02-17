@@ -12,4 +12,16 @@
     <string name="zodiac_display_full">Full</string>
     <string name="zodiac_display_color">By Color</string>
     <string name="zodiac_display_none">None</string>
+    <string name="error_network">Network error while fetching holidays</string>
+    <string name="error_generic">Error loading holiday data: %1$s</string>
+    <string name="settings_holiday_sync_title">Holiday Data Sync</string>
+    <string name="settings_holiday_source">Data Source</string>
+    <string name="settings_holiday_about">About data</string>
+    <string name="settings_holiday_sync_button">Sync Data</string>
+    <string name="settings_holiday_updated_at">Updated At: %1$s</string>
+    <string name="settings_holiday_last_synced">Last Synced at: %1$s</string>
+    <string name="settings_holiday_not_available">N/A</string>
+    <string name="settings_holiday_error_prefix">Error: %1$s</string>
+    <string name="settings_holiday_no_data_note_template">Note: If there is no official data for a year, that year will be displayed in %1$s (e.g., %2$s).</string>
+    <string name="settings_holiday_orange_word">orange</string>
 </resources>
