@@ -57,8 +57,16 @@ object CalendarFactory {
       today: LocalDate,
   ): DateInfo {
     // Get Japanese holiday
-    val japaneseHoliday = holidays.getHoliday(date)
-    val japaneseLongHoliday = JapaneseHolidayUtils.getLongNameForHoliday(japaneseHoliday, date)
+    val (japaneseHoliday, japaneseLongHoliday) =
+        if (holidays.hasData(date.year)) {
+          val japaneseHoliday = holidays.getHoliday(date)
+          val japaneseLongHoliday =
+              JapaneseHolidayUtils.getLongNameForHoliday(japaneseHoliday, date)
+          Pair(japaneseHoliday, japaneseLongHoliday)
+        } else {
+          val japaneseHoliday = JapaneseHolidayUtils.getHolidayName(date)
+          Pair(japaneseHoliday, japaneseHoliday)
+        }
 
     // Determine states
     val isToday = date == today
@@ -66,7 +74,7 @@ object CalendarFactory {
 
     return DateInfo(
         value = date,
-        japaneseHoliday = japaneseHoliday ?: JapaneseHolidayUtils.getHolidayName(date),
+        japaneseHoliday = japaneseHoliday,
         japaneseLongHoliday = japaneseLongHoliday,
         hasHolidayDataForOfYear = holidays.hasData(date.year),
         isToday = isToday,

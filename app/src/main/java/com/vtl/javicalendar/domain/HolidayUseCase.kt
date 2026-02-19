@@ -2,8 +2,6 @@ package com.vtl.javicalendar.domain
 
 import com.vtl.javicalendar.domain.model.JapaneseHolidays
 import com.vtl.javicalendar.domain.repository.HolidayRepository
-import kotlin.concurrent.atomics.AtomicLong
-import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,19 +19,12 @@ class HolidayUseCase(
 
   operator fun invoke() = holidays
 
-  @OptIn(ExperimentalAtomicApi::class) private val lastUpdated = AtomicLong(0L)
+  private val lastUpdated
+    get() = holidays.value.lastSuccess
 
-  @OptIn(ExperimentalAtomicApi::class)
   suspend fun refresh() =
-      if (System.currentTimeMillis() - lastUpdated.load() < REFRESH_INTERVAL) {
+      if (System.currentTimeMillis() - lastUpdated < REFRESH_INTERVAL) {
         false
       } else
-          repository
-              .getHolidays()
-              .let { newData -> _holidays.getAndUpdate { newData } != newData }
-              .also {
-                if (it) {
-                  lastUpdated.store(System.currentTimeMillis())
-                }
-              }
+          repository.getHolidays().let { newData -> _holidays.getAndUpdate { newData } != newData }
 }
