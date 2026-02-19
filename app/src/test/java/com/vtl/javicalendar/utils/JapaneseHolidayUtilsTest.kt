@@ -6,20 +6,20 @@ import com.vtl.javicalendar.presentation.model.DateInfo.Companion.japaneseYear
 import java.time.LocalDate
 import java.time.Month
 import java.time.format.DateTimeFormatter
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class JapaneseHolidayUtilsTest {
 
   companion object {
-    private val expectedData by lazy {
-      parseHolidays(HolidayRemoteDataSource().fetchSync(0L)!!.content)
-    }
     private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd(E)")
   }
 
   @Test
-  fun test() {
+  fun test() = runTest {
+    val expectedData = parseHolidays(HolidayRemoteDataSource().fetch(0L)!!.content)
+
     (2023..expectedData.years.last)
         .toList()
         .parallelStream()

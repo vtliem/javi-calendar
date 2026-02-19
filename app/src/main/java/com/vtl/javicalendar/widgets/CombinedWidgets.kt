@@ -28,7 +28,7 @@ import com.vtl.javicalendar.presentation.model.DateInfo
 import com.vtl.javicalendar.presentation.model.MonthInfo
 import com.vtl.javicalendar.presentation.model.Option
 import com.vtl.javicalendar.presentation.theme.*
-import com.vtl.javicalendar.widgets.WidgetManager.loadOrCreateSources
+import com.vtl.javicalendar.widgets.WidgetManager.loadSources
 import com.vtl.javicalendar.widgets.components.WidgetDayDetails
 import com.vtl.javicalendar.widgets.components.WidgetMonthGrid
 
@@ -65,7 +65,7 @@ class CombinedWidget : GlanceAppWidget() {
 
       val state by
           produceState<WidgetData?>(initialValue = null, prefs) {
-            val sources = loadOrCreateSources(context, prefs)
+            val sources = loadSources(prefs) ?: return@produceState
             value = createData(sources)
           }
       val displayOption = state?.option?.adjustBySize(widgetSize) ?: Option()

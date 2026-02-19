@@ -1,71 +1,34 @@
 package com.vtl.javicalendar.data.datasource
 
-import java.io.IOException
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.android.Android
+import io.ktor.client.request.get
+import io.ktor.client.request.head
+import io.ktor.client.request.header
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.readRawBytes
+import io.ktor.http.HttpHeaders
+import io.ktor.http.lastModified
 import java.net.HttpURLConnection
-import java.net.URI
-import java.nio.charset.Charset
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlin.getValue
 
 class HolidayRemoteDataSource {
   companion object {
     const val INFO_URL = "https://www8.cao.go.jp/chosei/shukujitsu/gaiyou.html"
     const val CSV_URL = "https://www8.cao.go.jp/chosei/shukujitsu/syukujitsu.csv"
 
-    /**
-     * request japanese holiday csv data
-     *
-     * @param method `GET` or `HEAD`
-     * @param onProcess
-     *     - lastModified: Long
-     *     - content: () -> String use to read response body, should call inside onProcess block
-     *
-     * @throws FetchHolidayError
-     */
-    private inline fun <reified R> request(
-        method: String,
-        timeout: Int,
-        onProcess: (lastModified: Long, content: () -> String) -> R,
-    ): R {
-      val connection =
-          (URI(CSV_URL).toURL().openConnection() as HttpURLConnection).apply {
-            requestMethod = method
-            connectTimeout = timeout
-            readTimeout = timeout
-          }
+    private val HttpResponse.lastModified: Long
+      get() = lastModified()?.toInstant()?.toEpochMilli() ?: 0L
+  }
 
-      try {
-        val responseCode =
-            try {
-              connection.responseCode
-            } catch (e: IOException) {
-              throw FetchHolidayError.NetworkError(e)
-            } catch (e: Exception) {
-              throw FetchHolidayError.UnknownError(e)
-            }
-
-        when {
-          responseCode <= 0 -> {
-            throw FetchHolidayError.NetworkError(IOException("Invalid response from server"))
-          }
-
-          responseCode == HttpURLConnection.HTTP_OK -> {
-            return onProcess(connection.lastModified) {
-              connection.inputStream.bufferedReader(Charset.forName("Shift-JIS")).use {
-                it.readText()
-              }
-            }
-          }
-
-          else -> {
-            throw FetchHolidayError.ServerError(responseCode, connection.responseMessage)
-          }
-        }
-      } finally {
-        runCatching {
-          // ignore error
-          connection.disconnect()
-        }
+  private val client by lazy {
+    HttpClient(Android) {
+      engine {
+        connectTimeout = 10_000
+        socketTimeout = 10_000
+      }
+      install(io.ktor.client.plugins.DefaultRequest) {
+        header(HttpHeaders.UserAgent, "Mozilla/5.0 (Android)")
       }
     }
   }
@@ -79,35 +42,41 @@ class HolidayRemoteDataSource {
    *
    * @throws FetchHolidayError
    */
-  suspend fun fetch(lastModified: Long): HolidayData? =
-      withContext(Dispatchers.IO) { fetchSync(lastModified) }
-
-  fun fetchSync(lastModified: Long): HolidayData? {
+  suspend fun fetch(lastModified: Long): HolidayData? {
     return if (detectChanges(lastModified)) {
-      fetchNewData(lastModified)
+      fetchNewData()
     } else {
       null
     }
   }
 
   /** Checks if the remote data has changed using a HEAD request. */
-  private fun detectChanges(lastModified: Long): Boolean {
+  private suspend fun detectChanges(lastModified: Long): Boolean {
     if (lastModified == 0L) return true
-    // 10 seconds for refresh check
-    return request("HEAD", 10_000) { remoteLastModified, _ ->
-      remoteLastModified == 0L || remoteLastModified != lastModified
-    }
+    val response =
+        try {
+          client.head(CSV_URL)
+        } catch (t: Throwable) {
+          throw FetchHolidayError.NetworkError(t)
+        }
+    if (response.status.value != HttpURLConnection.HTTP_OK)
+        throw FetchHolidayError.ServerError(response.status.value, response.status.description)
+
+    return response.lastModified.let { it == 0L || it != lastModified }
   }
 
   /** Downloads the new CSV content. */
-  private fun fetchNewData(lastModified: Long): HolidayData {
-    val timeout = if (lastModified == 0L) 300_000 else 10_000 // 5 mins for initial, 10s for refresh
-    return request("GET", timeout) { remoteLastModified, content ->
-      val csv = content().trim()
-      if (csv.isEmpty()) {
-        throw FetchHolidayError.ServerError(HttpURLConnection.HTTP_OK, "Empty response")
-      }
-      HolidayData(remoteLastModified, csv)
-    }
+  private suspend fun fetchNewData(): HolidayData {
+    val response =
+        try {
+          client.get(CSV_URL)
+        } catch (t: Throwable) {
+          throw FetchHolidayError.NetworkError(t)
+        }
+    if (response.status.value != HttpURLConnection.HTTP_OK)
+        throw FetchHolidayError.ServerError(response.status.value, response.status.description)
+    val lastModified = response.lastModified
+    val content = String(response.readRawBytes(), charset("Shift-JIS"))
+    return HolidayData(lastModified = lastModified, content = content)
   }
 }
