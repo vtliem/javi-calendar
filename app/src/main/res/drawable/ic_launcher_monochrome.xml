@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Calendar Body (Base) -->
+    <path
+        android:fillColor="#000000"
+        android:fillAlpha="0.3"
+        android:pathData="M34,42h40c2,0 4,2 4,4v34c0,2 -2,4 -4,4h-40c-2,0 -4,-2 -4,-4v-34c0,-2 2,-4 4,-4z" />
+
+    <!-- Calendar Header -->
+    <path
+        android:fillColor="#000000"
+        android:fillAlpha="0.6"
+        android:pathData="M34,42h40c2,0 4,2 4,4v8h-48v-8c0,-2 2,-4 4,-4z" />
+
+    <!-- Calendar Rings -->
+    <path
+        android:strokeColor="#000000"
+        android:strokeWidth="1.5"
+        android:strokeAlpha="1.0"
+        android:strokeLineCap="round"
+        android:pathData="M40,38v8 M68,38v8" />
+
+    <!-- Large 'J' -->
+    <path
+        android:strokeColor="#000000"
+        android:strokeWidth="3.5"
+        android:strokeAlpha="1.0"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M56,58v12c0,3 -2,5 -5,5s-5,-2 -5,-5" />
+
+    <!-- Number '15' -->
+    <path
+        android:fillColor="#000000"
+        android:fillAlpha="1.0"
+        android:pathData="M64,58h1v12h-1z M68,58h5v1.5h-3.5v2.5c0.5,0 1,0.2 1.5,0.5s0.8,0.8 0.8,1.5s-0.3,1.2 -0.8,1.5s-1.2,0.5 -1.8,0.5c-0.6,0 -1.2,-0.2 -1.7,-0.5v-1.8h1.2c0.2,0.3 0.5,0.5 0.8,0.5s0.5,-0.2 0.5,-0.5s-0.2,-0.5 -0.5,-0.5h-1.5z" />
+
+</vector>
