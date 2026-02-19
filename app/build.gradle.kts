@@ -22,8 +22,10 @@ android {
             libs.versions.targetSdk
                 .get()
                 .toInt()
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = project.findProperty("android.injected.versionCode")?.toString()?.toInt()
+            ?: 1
+        versionName = project.findProperty("android.injected.versionName")?.toString()
+            ?: "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -43,6 +45,11 @@ android {
     }
 
     buildTypes {
+        getByName("debug") {
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev"
+            resValue("string", "app_name", "Javi Cal (Dev)")
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
@@ -59,6 +66,7 @@ android {
     }
     buildFeatures {
         compose = true
+        resValues = true
     }
     packaging {
         resources {
