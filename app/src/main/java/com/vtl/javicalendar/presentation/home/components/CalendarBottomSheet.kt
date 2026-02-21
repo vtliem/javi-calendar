@@ -20,23 +20,27 @@ fun CalendarBottomSheet(
       onDismissRequest = onDismissRequest,
       sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
   ) {
-    Box(modifier = Modifier.fillMaxHeight(0.8f)) {
-      when (uiState.viewMode) {
-        ViewMode.YEAR_SELECT -> {
-          YearSelectionGrid(
-              selectedYear = uiState.selectedDate.year,
-              holidays = uiState.holidays,
-              option = uiState.option,
-              onYearSelected = onYearSelected,
-          )
+    LimitFontScale(uiState.option.maxFontScale) {
+      Box(modifier = Modifier.fillMaxHeight(0.8f)) {
+        when (uiState.viewMode) {
+          ViewMode.YEAR_SELECT -> {
+            YearSelectionGrid(
+                selectedYear = uiState.selectedDate.year,
+                holidays = uiState.holidays,
+                option = uiState.option,
+                onYearSelected = onYearSelected,
+            )
+          }
+
+          ViewMode.MONTH_SELECT -> {
+            MonthSelectionGrid(
+                selectedMonth = uiState.selectedDate.monthValue,
+                onMonthSelected = onMonthSelected,
+            )
+          }
+
+          else -> {}
         }
-        ViewMode.MONTH_SELECT -> {
-          MonthSelectionGrid(
-              selectedMonth = uiState.selectedDate.monthValue,
-              onMonthSelected = onMonthSelected,
-          )
-        }
-        else -> {}
       }
     }
   }
