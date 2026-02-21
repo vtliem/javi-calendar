@@ -1,6 +1,7 @@
 package com.vtl.javicalendar.widgets.components
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceModifier
@@ -101,7 +102,7 @@ private fun RowScope.WidgetDayCell(dateInfo: DateInfo, option: Option) {
                 GlanceModifier.background(widgetColor(it))
                     .size((18.sp.value * fontScale).dp)
                     .cornerRadius((9.sp.value * fontScale).dp)
-              } ?: GlanceModifier,
+              } ?: GlanceModifier.background(Color.Transparent),
       )
     }
 

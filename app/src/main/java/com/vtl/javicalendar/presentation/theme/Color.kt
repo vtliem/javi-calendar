@@ -14,5 +14,5 @@ val TodayBackground = Color.Gray
 val SelectedBorder = Color.Gray.copy(alpha = 0.3f)
 
 // Widget Colors
-val WidgetBackgroundLight = Color(0x80FFFFFF)
+val WidgetBackgroundLight = Color(0xF0FFFFFF)
 val WidgetBackgroundDark = Color(0x80000000)
