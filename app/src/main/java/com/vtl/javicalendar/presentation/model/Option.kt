@@ -33,6 +33,7 @@ data class Option(
     val dayDetail: OptionItem = OptionItem(),
     val month: OptionItem = OptionItem(),
     val sundayFirst: Boolean = true,
+    val maxFontScale: Float = 1.5f,
 ) {
   fun adjustBySize(widgetSize: DpSize) =
       copy(

@@ -8,7 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.vtl.javicalendar.presentation.home.HomeUiState
 import com.vtl.javicalendar.presentation.home.ViewMode
-import com.vtl.javicalendar.presentation.model.Option
 
 @Composable
 fun CalendarBottomSheet(
@@ -16,38 +15,32 @@ fun CalendarBottomSheet(
     onDismissRequest: () -> Unit,
     onYearSelected: (Int) -> Unit,
     onMonthSelected: (Int) -> Unit,
-    onOptionChanged: (Option) -> Unit,
-    onSyncClick: () -> Unit,
 ) {
   ModalBottomSheet(
       onDismissRequest = onDismissRequest,
       sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
   ) {
-    Box(modifier = Modifier.fillMaxHeight(0.8f)) {
-      when (uiState.viewMode) {
-        ViewMode.YEAR_SELECT -> {
-          YearSelectionGrid(
-              selectedYear = uiState.selectedDate.year,
-              holidays = uiState.holidays,
-              option = uiState.option,
-              onYearSelected = onYearSelected,
-          )
+    LimitFontScale(uiState.option.maxFontScale) {
+      Box(modifier = Modifier.fillMaxHeight(0.8f)) {
+        when (uiState.viewMode) {
+          ViewMode.YEAR_SELECT -> {
+            YearSelectionGrid(
+                selectedYear = uiState.selectedDate.year,
+                holidays = uiState.holidays,
+                option = uiState.option,
+                onYearSelected = onYearSelected,
+            )
+          }
+
+          ViewMode.MONTH_SELECT -> {
+            MonthSelectionGrid(
+                selectedMonth = uiState.selectedDate.monthValue,
+                onMonthSelected = onMonthSelected,
+            )
+          }
+
+          else -> {}
         }
-        ViewMode.MONTH_SELECT -> {
-          MonthSelectionGrid(
-              selectedMonth = uiState.selectedDate.monthValue,
-              onMonthSelected = onMonthSelected,
-          )
-        }
-        ViewMode.SETTINGS -> {
-          SettingsSection(
-              option = uiState.option,
-              onOptionChanged = onOptionChanged,
-              holidays = uiState.holidays,
-              onSyncClick = onSyncClick,
-          )
-        }
-        else -> {}
       }
     }
   }

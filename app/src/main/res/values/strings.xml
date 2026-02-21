@@ -24,4 +24,5 @@
     <string name="settings_holiday_error_prefix">Error: %1$s</string>
     <string name="settings_holiday_no_data_note_template">Note: If there is no official data for a year, that year will be displayed in %1$s (e.g., %2$s).</string>
     <string name="settings_holiday_orange_word">orange</string>
+    <string name="settings_max_font_scale">Limit font scale</string>
 </resources>

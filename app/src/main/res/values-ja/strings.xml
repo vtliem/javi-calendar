@@ -24,4 +24,5 @@
     <string name="settings_holiday_error_prefix">エラー: %1$s</string>
     <string name="settings_holiday_no_data_note_template">注意：ある年の公式データがない場合、その年は %1$s で表示されます（例： %2$s）。</string>
     <string name="settings_holiday_orange_word">オレンジ色</string>
+    <string name="settings_max_font_scale">フォントスケールの制限</string>
 </resources>

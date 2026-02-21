@@ -3,8 +3,11 @@ package com.vtl.javicalendar.presentation.home.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -141,78 +144,92 @@ fun DayDetailsSection(
 
 @Composable
 private fun ZodiacDetail(dateInfo: DateInfo) {
+  var expanded by remember { mutableStateOf(true) }
   val zodiac = dateInfo.lunarDate.zodiac
   val duty = dateInfo.lunarDate.duty
   Column(modifier = Modifier.fillMaxWidth()) {
-    Text(
-        text = zodiac.toString(),
-        style = MaterialTheme.typography.bodyMedium,
-        color = zodiac.color ?: MaterialTheme.colorScheme.onSurface,
-        modifier = Modifier.fillMaxWidth(),
-        textAlign = TextAlign.Center,
-    )
-    Text(
-        text = zodiac.detail,
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-    Column {
-      Row(
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.spacedBy(4.dp),
-      ) {
+    Row(
+        modifier =
+            Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+      Text(
+          text = zodiac.toString(),
+          style = MaterialTheme.typography.bodyMedium,
+          color = zodiac.color ?: MaterialTheme.colorScheme.onSurface,
+      )
+      Icon(
+          imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+          contentDescription = if (expanded) "Collapse" else "Expand",
+          modifier = Modifier.size(20.dp),
+          tint = MaterialTheme.colorScheme.onSurfaceVariant,
+      )
+    }
+    if (expanded) {
+      Text(
+          text = zodiac.detail,
+          style = MaterialTheme.typography.bodySmall,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+      )
+      Column {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+          Text(
+              text = "Trực:",
+              style = MaterialTheme.typography.labelSmall,
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+          )
+          Text(
+              text = duty.dutyName,
+              style = MaterialTheme.typography.bodySmall,
+              color = MaterialTheme.colorScheme.onSurface,
+          )
+          dateInfo.lunarDate.solarTermName?.let {
+            Text(
+                text = "Tiết khí:",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 16.dp),
+            )
+            Text(
+                text = it,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+          }
+        }
+        if (duty.goodFor.isNotEmpty()) {
+          Text(
+              text = duty.goodFor,
+              style = MaterialTheme.typography.bodySmall,
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+              modifier = Modifier.padding(start = 16.dp),
+          )
+        }
+        if (duty.badFor.isNotEmpty()) {
+          Text(
+              text = duty.badFor,
+              style = MaterialTheme.typography.bodySmall,
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+              modifier = Modifier.padding(start = 16.dp),
+          )
+        }
+      }
+      Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
-            text = "Trực:",
+            text = "Giờ Hoàng Đạo:",
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Text(
-            text = duty.dutyName,
+            text = dateInfo.lunarDate.auspiciousHours,
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        dateInfo.lunarDate.solarTermName?.let {
-          Text(
-              text = "Tiết khí:",
-              style = MaterialTheme.typography.labelSmall,
-              color = MaterialTheme.colorScheme.onSurfaceVariant,
-              modifier = Modifier.padding(start = 16.dp),
-          )
-          Text(
-              text = it,
-              style = MaterialTheme.typography.bodySmall,
-              color = MaterialTheme.colorScheme.onSurface,
-          )
-        }
-      }
-      if (duty.goodFor.isNotEmpty()) {
-        Text(
-            text = duty.goodFor,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(start = 16.dp),
+            color = dateInfo.colorOfAuspiciousHours,
         )
       }
-      if (duty.badFor.isNotEmpty()) {
-        Text(
-            text = duty.badFor,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(start = 16.dp),
-        )
-      }
-    }
-    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-      Text(
-          text = "Giờ Hoàng Đạo:",
-          style = MaterialTheme.typography.labelSmall,
-          color = MaterialTheme.colorScheme.onSurfaceVariant,
-      )
-      Text(
-          text = dateInfo.lunarDate.auspiciousHours,
-          style = MaterialTheme.typography.bodySmall,
-          color = dateInfo.colorOfAuspiciousHours,
-      )
     }
   }
 }
