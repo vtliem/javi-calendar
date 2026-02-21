@@ -2,8 +2,8 @@ package com.vtl.javicalendar.widgets.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceModifier
+import androidx.glance.LocalContext
 import androidx.glance.layout.*
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
@@ -14,10 +14,12 @@ import com.vtl.javicalendar.presentation.model.DateInfo.Companion.color
 import com.vtl.javicalendar.presentation.model.DateInfo.Companion.displayName
 import com.vtl.javicalendar.presentation.model.Option
 import com.vtl.javicalendar.presentation.model.ZodiacDisplay
+import com.vtl.javicalendar.utils.limitScaleSp
 
 @Composable
 fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
   if (dateInfo == null) return
+  val fontScale = LocalContext.current.resources.configuration.fontScale
 
   Column(
       modifier = GlanceModifier.fillMaxWidth(),
@@ -32,7 +34,7 @@ fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
             text = dateInfo.value.year.toString(),
             style =
                 TextStyle(
-                    fontSize = 14.sp,
+                    fontSize = 14.limitScaleSp(option, fontScale),
                     fontWeight = FontWeight.Bold,
                     color = widgetColor(null),
                 ),
@@ -42,7 +44,7 @@ fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
               text = dateInfo.japaneseYear,
               style =
                   TextStyle(
-                      fontSize = 11.sp,
+                      fontSize = 11.limitScaleSp(option, fontScale),
                       color = widgetColor(dateInfo.colorOfJapaneseYear, true),
                   ),
           )
@@ -50,7 +52,11 @@ fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
         if (option.dayDetail.lunarDate) {
           Text(
               text = dateInfo.lunarYear,
-              style = TextStyle(fontSize = 11.sp, color = widgetColor(null, true)),
+              style =
+                  TextStyle(
+                      fontSize = 11.limitScaleSp(option, fontScale),
+                      color = widgetColor(null, true),
+                  ),
           )
         }
       }
@@ -60,7 +66,7 @@ fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
             text = dateInfo.value.dayOfMonth.toString(),
             style =
                 TextStyle(
-                    fontSize = 32.sp,
+                    fontSize = 32.limitScaleSp(option, fontScale),
                     fontWeight = FontWeight.Bold,
                     color = widgetColor(dateInfo.colorOfDay),
                 ),
@@ -68,7 +74,10 @@ fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
         Text(
             text = dateInfo.value.dayOfWeek.displayName,
             style =
-                TextStyle(fontSize = 14.sp, color = widgetColor(dateInfo.value.dayOfWeek.color)),
+                TextStyle(
+                    fontSize = 14.limitScaleSp(option, fontScale),
+                    color = widgetColor(dateInfo.value.dayOfWeek.color),
+                ),
         )
       }
 
@@ -80,7 +89,7 @@ fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
             text = DateInfo.run { dateInfo.value.monthName },
             style =
                 TextStyle(
-                    fontSize = 14.sp,
+                    fontSize = 14.limitScaleSp(option, fontScale),
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.End,
                     color = widgetColor(null),
@@ -89,7 +98,11 @@ fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
         if (option.dayDetail.lunarDate) {
           Text(
               text = dateInfo.lunarDate.month.displayName,
-              style = TextStyle(fontSize = 11.sp, color = widgetColor(null, true)),
+              style =
+                  TextStyle(
+                      fontSize = 11.limitScaleSp(option, fontScale),
+                      color = widgetColor(null, true),
+                  ),
           )
         }
       }
@@ -102,7 +115,7 @@ fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
             text = it,
             style =
                 TextStyle(
-                    fontSize = 11.sp,
+                    fontSize = 11.limitScaleSp(option, fontScale),
                     fontWeight = FontWeight.Bold,
                     color = widgetColor(dateInfo.colorOfJapaneseHoliday),
                 ),
@@ -116,14 +129,14 @@ fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
           text = dateInfo.lunarDate.day.displayName,
           style =
               TextStyle(
-                  fontSize = 11.sp,
+                  fontSize = 11.limitScaleSp(option, fontScale),
                   color = widgetColor(dateInfo.colorOfLunarDay(option.dayDetail.zodiac), true),
               ),
       )
     }
 
     if (option.dayDetail.lunarDate && option.dayDetail.zodiac == ZodiacDisplay.Full) {
-      WidgetZodiacDetail(dateInfo)
+      WidgetZodiacDetail(dateInfo, option)
     }
 
     if (option.dayDetail.lunarDate && option.dayDetail.observance) {
@@ -133,7 +146,7 @@ fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
             text = it,
             style =
                 TextStyle(
-                    fontSize = 11.sp,
+                    fontSize = 11.limitScaleSp(option, fontScale),
                     fontWeight = FontWeight.Bold,
                     color = widgetColor(dateInfo.colorOfObservance),
                 ),
@@ -144,7 +157,8 @@ fun WidgetDayDetails(dateInfo: DateInfo?, option: Option) {
 }
 
 @Composable
-private fun WidgetZodiacDetail(dateInfo: DateInfo) {
+private fun WidgetZodiacDetail(dateInfo: DateInfo, option: Option) {
+  val fontScale = LocalContext.current.resources.configuration.fontScale
   val zodiac = dateInfo.lunarDate.zodiac
   val duty = dateInfo.lunarDate.duty
   Column(modifier = GlanceModifier.fillMaxWidth()) {
@@ -153,7 +167,7 @@ private fun WidgetZodiacDetail(dateInfo: DateInfo) {
         text = zodiac.toString(),
         style =
             TextStyle(
-                fontSize = 11.sp,
+                fontSize = 11.limitScaleSp(option, fontScale),
                 color = widgetColor(zodiac.color, true),
                 textAlign = TextAlign.Center,
             ),
@@ -161,41 +175,66 @@ private fun WidgetZodiacDetail(dateInfo: DateInfo) {
     )
     Text(
         text = zodiac.detail,
-        style = TextStyle(fontSize = 10.sp, color = widgetColor(null, true)),
+        style =
+            TextStyle(
+                fontSize = 10.limitScaleSp(option, fontScale),
+                color = widgetColor(null, true),
+            ),
     )
     Column {
       Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = "Trực: ",
-            style = TextStyle(fontSize = 8.sp, color = widgetColor(null, true)),
+            style =
+                TextStyle(
+                    fontSize = 8.limitScaleSp(option, fontScale),
+                    color = widgetColor(null, true),
+                ),
         )
         Text(
             text = duty.dutyName,
-            style = TextStyle(fontSize = 10.sp, color = widgetColor(null)),
+            style =
+                TextStyle(fontSize = 10.limitScaleSp(option, fontScale), color = widgetColor(null)),
         )
         dateInfo.lunarDate.solarTermName?.let {
           Text(
               text = "Tiết khí:",
-              style = TextStyle(fontSize = 8.sp, color = widgetColor(null, true)),
+              style =
+                  TextStyle(
+                      fontSize = 8.limitScaleSp(option, fontScale),
+                      color = widgetColor(null, true),
+                  ),
               modifier = GlanceModifier.padding(start = 16.dp),
           )
           Text(
               text = it,
-              style = TextStyle(fontSize = 10.sp, color = widgetColor(null)),
+              style =
+                  TextStyle(
+                      fontSize = 10.limitScaleSp(option, fontScale),
+                      color = widgetColor(null),
+                  ),
           )
         }
       }
       if (duty.goodFor.isNotEmpty()) {
         Text(
             text = duty.goodFor,
-            style = TextStyle(fontSize = 10.sp, color = widgetColor(null, true)),
+            style =
+                TextStyle(
+                    fontSize = 10.limitScaleSp(option, fontScale),
+                    color = widgetColor(null, true),
+                ),
             modifier = GlanceModifier.padding(start = 12.dp),
         )
       }
       if (duty.badFor.isNotEmpty()) {
         Text(
             text = duty.badFor,
-            style = TextStyle(fontSize = 10.sp, color = widgetColor(null, true)),
+            style =
+                TextStyle(
+                    fontSize = 10.limitScaleSp(option, fontScale),
+                    color = widgetColor(null, true),
+                ),
             modifier = GlanceModifier.padding(start = 12.dp),
         )
       }
@@ -203,11 +242,19 @@ private fun WidgetZodiacDetail(dateInfo: DateInfo) {
     Row {
       Text(
           text = "Giờ Hoàng Đạo: ",
-          style = TextStyle(fontSize = 8.sp, color = widgetColor(null, true)),
+          style =
+              TextStyle(
+                  fontSize = 8.limitScaleSp(option, fontScale),
+                  color = widgetColor(null, true),
+              ),
       )
       Text(
           text = dateInfo.lunarDate.auspiciousHours,
-          style = TextStyle(fontSize = 10.sp, color = widgetColor(dateInfo.colorOfAuspiciousHours)),
+          style =
+              TextStyle(
+                  fontSize = 10.limitScaleSp(option, fontScale),
+                  color = widgetColor(dateInfo.colorOfAuspiciousHours),
+              ),
       )
     }
   }

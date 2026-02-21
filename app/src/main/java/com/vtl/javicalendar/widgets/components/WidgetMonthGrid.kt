@@ -3,7 +3,6 @@ package com.vtl.javicalendar.widgets.components
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
 import androidx.glance.LocalContext
@@ -20,11 +19,12 @@ import com.vtl.javicalendar.presentation.model.DateInfo.Companion.shortName
 import com.vtl.javicalendar.presentation.model.MonthInfo
 import com.vtl.javicalendar.presentation.model.Option
 import com.vtl.javicalendar.presentation.model.ZodiacDisplay
+import com.vtl.javicalendar.utils.limitScaleSp
+import com.vtl.javicalendar.utils.scaleDp
 
 @Composable
-fun WidgetMonthGrid(monthInfo: MonthInfo?, option: Option) {
-  if (monthInfo == null) return
-
+fun WidgetMonthGrid(monthInfo: MonthInfo, option: Option) {
+  val fontScale = LocalContext.current.resources.configuration.fontScale
   // Weekday Headers
   Row(modifier = GlanceModifier.fillMaxWidth().padding(bottom = 2.dp)) {
     monthInfo.daysOfWeek.forEach { dayOfWeek ->
@@ -32,7 +32,7 @@ fun WidgetMonthGrid(monthInfo: MonthInfo?, option: Option) {
           text = dayOfWeek.shortName,
           style =
               TextStyle(
-                  fontSize = 12.sp,
+                  fontSize = 12.limitScaleSp(option, fontScale),
                   fontWeight = FontWeight.Bold,
                   color = widgetColor(dayOfWeek.color),
                   textAlign = TextAlign.Center,
@@ -80,7 +80,7 @@ private fun RowScope.WidgetDayCell(dateInfo: DateInfo, option: Option) {
             text = dateInfo.lunarDayOfMonth,
             style =
                 TextStyle(
-                    fontSize = 11.sp,
+                    fontSize = 11.limitScaleSp(option, fontScale),
                     color = widgetColor(dateInfo.colorOfLunarDay(option.month.zodiac), true),
                     textAlign = TextAlign.End,
                 ),
@@ -92,7 +92,7 @@ private fun RowScope.WidgetDayCell(dateInfo: DateInfo, option: Option) {
           text = dateInfo.value.dayOfMonth.toString(),
           style =
               TextStyle(
-                  fontSize = 14.sp,
+                  fontSize = 14.limitScaleSp(option, fontScale),
                   fontWeight = FontWeight.Bold,
                   color = widgetColor(dateInfo.colorOfDay),
                   textAlign = TextAlign.Center,
@@ -100,8 +100,8 @@ private fun RowScope.WidgetDayCell(dateInfo: DateInfo, option: Option) {
           modifier =
               dateInfo.backgroundColorOfDay?.let {
                 GlanceModifier.background(widgetColor(it))
-                    .size((18.sp.value * fontScale).dp)
-                    .cornerRadius((9.sp.value * fontScale).dp)
+                    .size(18.scaleDp(option, fontScale))
+                    .cornerRadius(9.scaleDp(option, fontScale))
               } ?: GlanceModifier.background(Color.Transparent),
       )
     }
@@ -113,7 +113,7 @@ private fun RowScope.WidgetDayCell(dateInfo: DateInfo, option: Option) {
             text = it,
             style =
                 TextStyle(
-                    fontSize = 8.sp,
+                    fontSize = 8.limitScaleSp(option, fontScale),
                     fontWeight = FontWeight.Bold,
                     color = widgetColor(dateInfo.colorOfJapaneseHoliday),
                     textAlign = TextAlign.Center,
@@ -129,7 +129,7 @@ private fun RowScope.WidgetDayCell(dateInfo: DateInfo, option: Option) {
           text = dateInfo.lunarDate.zodiac.zodiacName,
           style =
               TextStyle(
-                  fontSize = 8.sp,
+                  fontSize = 8.limitScaleSp(option, fontScale),
                   color = widgetColor(dateInfo.lunarDate.zodiac.color, true),
                   textAlign = TextAlign.Center,
               ),
@@ -144,7 +144,7 @@ private fun RowScope.WidgetDayCell(dateInfo: DateInfo, option: Option) {
             text = it,
             style =
                 TextStyle(
-                    fontSize = 7.sp,
+                    fontSize = 7.limitScaleSp(option, fontScale),
                     fontWeight = FontWeight.Bold,
                     color = widgetColor(dateInfo.colorOfObservance),
                     textAlign = TextAlign.Center,
@@ -159,7 +159,7 @@ private fun RowScope.WidgetDayCell(dateInfo: DateInfo, option: Option) {
             text = dateInfo.lunarDayOfMonth,
             style =
                 TextStyle(
-                    fontSize = 11.sp,
+                    fontSize = 11.limitScaleSp(option, fontScale),
                     color = widgetColor(dateInfo.colorOfLunarDay(option.month.zodiac), true),
                     textAlign = TextAlign.End,
                 ),

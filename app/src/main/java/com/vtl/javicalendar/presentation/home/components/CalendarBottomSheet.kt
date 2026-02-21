@@ -8,7 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.vtl.javicalendar.presentation.home.HomeUiState
 import com.vtl.javicalendar.presentation.home.ViewMode
-import com.vtl.javicalendar.presentation.model.Option
 
 @Composable
 fun CalendarBottomSheet(
@@ -16,8 +15,6 @@ fun CalendarBottomSheet(
     onDismissRequest: () -> Unit,
     onYearSelected: (Int) -> Unit,
     onMonthSelected: (Int) -> Unit,
-    onOptionChanged: (Option) -> Unit,
-    onSyncClick: () -> Unit,
 ) {
   ModalBottomSheet(
       onDismissRequest = onDismissRequest,
@@ -37,14 +34,6 @@ fun CalendarBottomSheet(
           MonthSelectionGrid(
               selectedMonth = uiState.selectedDate.monthValue,
               onMonthSelected = onMonthSelected,
-          )
-        }
-        ViewMode.SETTINGS -> {
-          SettingsSection(
-              option = uiState.option,
-              onOptionChanged = onOptionChanged,
-              holidays = uiState.holidays,
-              onSyncClick = onSyncClick,
           )
         }
         else -> {}
