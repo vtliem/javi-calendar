@@ -74,7 +74,10 @@ fun SettingsSection(
 
       // Limit font scale slider
       Column(modifier = Modifier.fillMaxWidth()) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
           Text(
               text = stringResource(R.string.settings_max_font_scale),
               style = MaterialTheme.typography.bodyLarge,
