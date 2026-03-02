@@ -41,9 +41,18 @@ class CalendarSourcesUseCase(
   operator fun invoke() = sources
 
   suspend fun refresh(): Boolean {
+    val todayUpdated = updateToday()
+    val holidaysUpdated = refreshHolidays()
+    return holidaysUpdated || todayUpdated
+  }
+
+  fun updateToday(): Boolean {
     val today = LocalDate.now()
-    val todayUpdated = _today.getAndUpdate { today } != today
-    return holidayUseCase.refresh() || todayUpdated
+    return _today.getAndUpdate { today } != today
+  }
+
+  suspend fun refreshHolidays(): Boolean {
+    return holidayUseCase.refresh()
   }
 
   fun updateOption(newOption: Option) = optionUseCase.updateOption(newOption)

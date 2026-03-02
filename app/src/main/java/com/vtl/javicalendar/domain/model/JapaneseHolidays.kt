@@ -22,6 +22,26 @@ data class JapaneseHolidays(
 
   fun hasData(year: Int) = year in years
 
+  /**
+   * Returns a copy of JapaneseHolidays containing only holidays for the specified month and year.
+   */
+  fun dataForMonth(date: LocalDate): JapaneseHolidays {
+    if (!hasData(date.year))
+        return JapaneseHolidays(
+            error = error,
+            lastModified = lastModified,
+            lastSuccess = lastSuccess,
+        )
+
+    val monthPrefix = date.year * 10000 + date.monthValue * 100
+    val filteredMap = holidayMap.filterKeys { it in monthPrefix until (monthPrefix + 100) }
+    return copy(
+        holidayMap = filteredMap,
+        minYear = date.year,
+        maxYear = date.year,
+    )
+  }
+
   companion object {
     private fun key(year: Int, month: Int, day: Int) = year * 10000 + month * 100 + day
 
@@ -54,7 +74,7 @@ data class JapaneseHolidays(
               it.forEach { (key, value) ->
                 map[key] = value
                 minKey = minOf(minKey, key)
-                maxKey = maxOf(maxKey, key)
+                maxKey = maxKey.coerceAtLeast(key)
               }
               JapaneseHolidays(
                   holidayMap = map,

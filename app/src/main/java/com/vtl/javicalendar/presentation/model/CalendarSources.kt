@@ -25,4 +25,8 @@ data class CalendarSources(
     val holidays: JapaneseHolidays,
     val option: Option,
     @Serializable(with = LocalDateSerializer::class) val today: LocalDate,
-)
+) {
+  fun dataForCurrentMonth(): CalendarSources {
+    return copy(holidays = holidays.dataForMonth(today))
+  }
+}

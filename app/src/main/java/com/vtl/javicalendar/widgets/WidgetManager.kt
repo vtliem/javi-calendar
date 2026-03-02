@@ -45,7 +45,8 @@ object WidgetManager {
     val dayDetailsIds = manager.getGlanceIds(DayDetailsWidget::class.java)
     val monthGridIds = manager.getGlanceIds(MonthGridWidget::class.java)
 
-    val sourcesJson = json.encodeToString(sources)
+    val widgetSources = sources.dataForCurrentMonth()
+    val sourcesJson = json.encodeToString(widgetSources)
 
     updateWidgets(context, combinedIds, sourcesJson, CombinedWidget())
     updateWidgets(context, dayDetailsIds, sourcesJson, DayDetailsWidget())
