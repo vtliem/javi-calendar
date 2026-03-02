@@ -6,6 +6,7 @@ import androidx.work.*
 import com.vtl.javicalendar.JaviCalendarApp
 import com.vtl.javicalendar.widgets.WidgetManager
 import java.time.Duration
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.concurrent.TimeUnit
@@ -20,9 +21,16 @@ class DailyUpdateWorker(context: Context, workerParams: WorkerParameters) :
     val result =
         try {
           val app = applicationContext as JaviCalendarApp
-          app.container.calendarSourcesUseCase.refresh()
-          val sources = app.container.calendarSourcesUseCase().first()
+          val useCase = app.container.calendarSourcesUseCase
+
+          // 1. Update the 'today' date in the UseCase
+          useCase.updateToday()
+
+          // 2. Trigger Widget Update with current cached data (today's date)
+          val today = LocalDate.now()
+          val sources = useCase().first { it.today == today }
           WidgetManager.triggerUpdate(app, sources)
+
           Result.success()
         } catch (e: Exception) {
           Log.e(WORK_NAME, "doWork failed", e)
@@ -34,7 +42,6 @@ class DailyUpdateWorker(context: Context, workerParams: WorkerParameters) :
         }
 
     // Only schedule the next daily update if we're not retrying the current one.
-    // This prevents the retry from being replaced by the next day's schedule.
     if (result != Result.retry()) {
       schedule(applicationContext, nextMidnight())
     }
@@ -51,8 +58,12 @@ class DailyUpdateWorker(context: Context, workerParams: WorkerParameters) :
       return Duration.between(now, midnight)
     }
 
-    fun schedule(context: Context, delay: Duration) {
-      Log.v(WORK_NAME, "schedule: delay=$delay")
+    fun schedule(
+        context: Context,
+        delay: Duration,
+        policy: ExistingWorkPolicy = ExistingWorkPolicy.REPLACE,
+    ) {
+      Log.v(WORK_NAME, "schedule: delay=$delay, policy=$policy")
       val request =
           OneTimeWorkRequestBuilder<DailyUpdateWorker>()
               .setInitialDelay(delay)
@@ -64,8 +75,7 @@ class DailyUpdateWorker(context: Context, workerParams: WorkerParameters) :
               )
               .build()
 
-      WorkManager.getInstance(context)
-          .enqueueUniqueWork(WORK_NAME, ExistingWorkPolicy.REPLACE, request)
+      WorkManager.getInstance(context).enqueueUniqueWork(WORK_NAME, policy, request)
     }
   }
 }
