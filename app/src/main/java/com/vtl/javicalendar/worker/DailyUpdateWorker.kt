@@ -28,7 +28,7 @@ class DailyUpdateWorker(context: Context, workerParams: WorkerParameters) :
 
           // 2. Trigger Widget Update with current cached data (today's date)
           val today = LocalDate.now()
-          val sources = useCase().first { it.today == today }
+          val sources = useCase().first { !it.holidays.isEmpty && it.today == today }
           WidgetManager.triggerUpdate(app, sources)
 
           Result.success()
