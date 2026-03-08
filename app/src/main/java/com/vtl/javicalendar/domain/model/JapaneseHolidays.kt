@@ -22,6 +22,9 @@ data class JapaneseHolidays(
 
   fun hasData(year: Int) = year in years
 
+  val isEmpty
+    get() = holidayMap.isEmpty()
+
   /**
    * Returns a copy of JapaneseHolidays containing only holidays for the specified month and year.
    */
