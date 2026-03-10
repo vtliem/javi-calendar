@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.work.*
 import com.vtl.javicalendar.JaviCalendarApp
 import java.util.concurrent.TimeUnit
-import kotlinx.coroutines.flow.first
 
 class HolidaySyncWorker(context: Context, workerParams: WorkerParameters) :
     CoroutineWorker(context, workerParams) {
@@ -16,6 +15,7 @@ class HolidaySyncWorker(context: Context, workerParams: WorkerParameters) :
     return try {
       val app = applicationContext as JaviCalendarApp
       val useCase = app.container.calendarSourcesUseCase
+
       useCase.refreshHolidays()
       Result.success()
     } catch (e: Exception) {
