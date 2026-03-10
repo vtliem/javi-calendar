@@ -33,7 +33,10 @@ class HolidayUseCase(
     get() = _holidays.value.lastSuccess
 
   suspend fun refresh() =
-      if (_holidays.value.error == null && System.currentTimeMillis() - lastUpdated < REFRESH_INTERVAL) {
+      if (
+          _holidays.value.error == null &&
+              System.currentTimeMillis() - lastUpdated < REFRESH_INTERVAL
+      ) {
         false
       } else {
         repository.getHolidays(refresh = true).let { newData ->
