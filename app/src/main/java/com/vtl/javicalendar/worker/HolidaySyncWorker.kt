@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Log
 import androidx.work.*
 import com.vtl.javicalendar.JaviCalendarApp
-import com.vtl.javicalendar.widgets.WidgetManager
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.flow.first
 
@@ -17,12 +16,7 @@ class HolidaySyncWorker(context: Context, workerParams: WorkerParameters) :
     return try {
       val app = applicationContext as JaviCalendarApp
       val useCase = app.container.calendarSourcesUseCase
-
-      if (useCase.refreshHolidays()) {
-        // Data changed! Trigger Widget Update to show official holidays
-        val sources = useCase().first()
-        WidgetManager.triggerUpdate(app, sources)
-      }
+      useCase.refreshHolidays()
       Result.success()
     } catch (e: Exception) {
       Log.e(WORK_NAME, "doWork failed", e)
