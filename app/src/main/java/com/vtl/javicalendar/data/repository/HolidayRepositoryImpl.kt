@@ -19,45 +19,47 @@ class HolidayRepositoryImpl(
     private const val TAG = "HolidayRepositoryImpl"
   }
 
-  override suspend fun getHolidays(): JapaneseHolidays =
+  override suspend fun getHolidays(refresh: Boolean): JapaneseHolidays =
       withContext(Dispatchers.Default) {
-        val lastModified = localDataSource.loadLastModified()
-        val newData =
-            try {
-              remoteDataSource.fetch(lastModified).also {
-                if (it == null) {
-                  Log.v(TAG, "Remote data unchanged")
-                  localDataSource.saveSuccess()
+        if (refresh) {
+          val lastModified = localDataSource.loadLastModified()
+          val newData =
+              try {
+                remoteDataSource.fetch(lastModified).also {
+                  if (it == null) {
+                    Log.v(TAG, "Remote data unchanged")
+                    localDataSource.saveSuccess()
+                  }
                 }
+              } catch (e: FetchHolidayError) {
+                Log.w(TAG, "Fetch failed: ${e.message}", e)
+                localDataSource.saveError(e.type, false)
+                null
+              } catch (e: Throwable) {
+                Log.e(TAG, "Unexpected error during fetch", e)
+                localDataSource.saveError(HolidayErrorType.Unknown, false)
+                null
               }
-            } catch (e: FetchHolidayError) {
-              Log.w(TAG, "Fetch failed: ${e.message}", e)
-              localDataSource.saveError(e.type, false)
-              null
-            } catch (e: Throwable) {
-              Log.e(TAG, "Unexpected error during fetch", e)
-              localDataSource.saveError(HolidayErrorType.Unknown, false)
-              null
-            }
 
-        if (newData != null) {
-          try {
-            Log.v(TAG, "New data received: ${newData.lastModified}. Parsing...")
-            val newHolidays =
-                JapaneseHolidays.parseHolidays(
-                        csv = newData.content,
-                        lastModified = newData.lastModified,
-                        lastSuccess = System.currentTimeMillis(),
-                    )
-                    .also {
-                      if (it.years.isEmpty()) throw Exception("Japanese Holiday data is empty")
-                    }
-            localDataSource.saveData(newData)
-            Log.v(TAG, "New data saved and returning")
-            return@withContext newHolidays
-          } catch (e: Throwable) {
-            Log.e(TAG, "Failed to parse new data", e)
-            localDataSource.saveError(HolidayErrorType.Parse, false)
+          if (newData != null) {
+            try {
+              Log.v(TAG, "New data received: ${newData.lastModified}. Parsing...")
+              val newHolidays =
+                  JapaneseHolidays.parseHolidays(
+                          csv = newData.content,
+                          lastModified = newData.lastModified,
+                          lastSuccess = System.currentTimeMillis(),
+                      )
+                      .also {
+                        if (it.years.isEmpty()) throw Exception("Japanese Holiday data is empty")
+                      }
+              localDataSource.saveData(newData)
+              Log.v(TAG, "New data saved and returning")
+              return@withContext newHolidays
+            } catch (e: Throwable) {
+              Log.e(TAG, "Failed to parse new data", e)
+              localDataSource.saveError(HolidayErrorType.Parse, false)
+            }
           }
         }
 
